@@ -12,7 +12,7 @@ interface ShopState {
 
 export const useShop = create<ShopState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       cart: [],
       wishlist: [],
       addToCart: (id) =>
@@ -25,8 +25,7 @@ export const useShop = create<ShopState>()(
             : [...s.wishlist, id],
         })),
       clearCart: () => set({ cart: [] }),
-      _get: get,
-    }) as ShopState,
+    }),
     { name: "thrifted-threads-shop" },
   ),
 );
