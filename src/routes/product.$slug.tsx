@@ -3,6 +3,7 @@ import { Heart, ShieldCheck, Truck } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { ConditionBadge } from "@/components/ConditionBadge";
 import { ProductCard } from "@/components/ProductCard";
+import type { Flaw } from "@/types";
 import { formatPKR, getProduct, products } from "@/lib/catalog";
 import { useShop } from "@/store/shop";
 
@@ -118,7 +119,7 @@ function ProductDetail() {
                 </p>
               ) : (
                 <ul className="mt-3 space-y-2 text-sm">
-                  {product.flaws.map((f) => (
+                  {product.flaws.map((f: Flaw) => (
                     <li key={f.label}>
                       <span className="type-eyebrow">{f.label}</span>
                       <span className="block type-caption">{f.note}</span>

@@ -16,7 +16,7 @@ import {
 import type { Product } from "@/types";
 
 interface ShopSearch {
-  category?: string;
+  category?: string | undefined;
 }
 
 export const Route = createFileRoute("/shop")({
