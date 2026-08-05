@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ConditionGuideRouteImport } from './routes/condition-guide'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as OurStoryRouteImport } from './routes/our-story'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as SizeGuideRouteImport } from './routes/size-guide'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 
@@ -31,9 +35,29 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConditionGuideRoute = ConditionGuideRouteImport.update({
+  id: '/condition-guide',
+  path: '/condition-guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OurStoryRoute = OurStoryRouteImport.update({
+  id: '/our-story',
+  path: '/our-story',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SizeGuideRoute = SizeGuideRouteImport.update({
+  id: '/size-guide',
+  path: '/size-guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WishlistRoute = WishlistRouteImport.update({
@@ -51,7 +75,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/condition-guide': typeof ConditionGuideRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/our-story': typeof OurStoryRoute
   '/shop': typeof ShopRoute
+  '/size-guide': typeof SizeGuideRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
 }
@@ -59,7 +87,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/condition-guide': typeof ConditionGuideRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/our-story': typeof OurStoryRoute
   '/shop': typeof ShopRoute
+  '/size-guide': typeof SizeGuideRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
 }
@@ -68,22 +100,49 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/condition-guide': typeof ConditionGuideRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/our-story': typeof OurStoryRoute
   '/shop': typeof ShopRoute
+  '/size-guide': typeof SizeGuideRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/cart' | '/checkout' | '/shop' | '/wishlist' | '/product/$slug'
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/condition-guide'
+    | '/how-it-works'
+    | '/our-story'
+    | '/shop'
+    | '/size-guide'
+    | '/wishlist'
+    | '/product/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cart' | '/checkout' | '/shop' | '/wishlist' | '/product/$slug'
+  to:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/condition-guide'
+    | '/how-it-works'
+    | '/our-story'
+    | '/shop'
+    | '/size-guide'
+    | '/wishlist'
+    | '/product/$slug'
   id:
     | '__root__'
     | '/'
     | '/cart'
     | '/checkout'
+    | '/condition-guide'
+    | '/how-it-works'
+    | '/our-story'
     | '/shop'
+    | '/size-guide'
     | '/wishlist'
     | '/product/$slug'
   fileRoutesById: FileRoutesById
@@ -92,7 +151,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  ConditionGuideRoute: typeof ConditionGuideRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  OurStoryRoute: typeof OurStoryRoute
   ShopRoute: typeof ShopRoute
+  SizeGuideRoute: typeof SizeGuideRoute
   WishlistRoute: typeof WishlistRoute
   ProductSlugRoute: typeof ProductSlugRoute
 }
@@ -120,11 +183,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/condition-guide': {
+      id: '/condition-guide'
+      path: '/condition-guide'
+      fullPath: '/condition-guide'
+      preLoaderRoute: typeof ConditionGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/our-story': {
+      id: '/our-story'
+      path: '/our-story'
+      fullPath: '/our-story'
+      preLoaderRoute: typeof OurStoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/size-guide': {
+      id: '/size-guide'
+      path: '/size-guide'
+      fullPath: '/size-guide'
+      preLoaderRoute: typeof SizeGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wishlist': {
@@ -148,7 +239,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  ConditionGuideRoute: ConditionGuideRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  OurStoryRoute: OurStoryRoute,
   ShopRoute: ShopRoute,
+  SizeGuideRoute: SizeGuideRoute,
   WishlistRoute: WishlistRoute,
   ProductSlugRoute: ProductSlugRoute,
 }
