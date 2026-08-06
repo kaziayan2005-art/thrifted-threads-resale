@@ -26,7 +26,6 @@ function Account() {
     products: o.items.map((i) => products[i]).filter((p): p is NonNullable<typeof p> => Boolean(p)),
   }));
   const purchased = rows.flatMap((r) => r.products);
-  const water = purchased.reduce((s, p) => s + p.waterSavedL, 0);
   const points = Math.round(purchased.reduce((s, p) => s + p.price, 0) / 100);
 
   return (
@@ -37,13 +36,6 @@ function Account() {
           <div className="ink-frame p-6">
             <p className="type-eyebrow text-muted-foreground">Loyalty points</p>
             <p className="type-h2 mt-2">{points}</p>
-          </div>
-          <div className="ink-frame p-6">
-            <p className="type-eyebrow text-muted-foreground">Water avoided</p>
-            <p className="type-h2 mt-2">
-              {water.toLocaleString("en-PK")}
-              <span className="text-base"> litres</span>
-            </p>
           </div>
         </div>
 

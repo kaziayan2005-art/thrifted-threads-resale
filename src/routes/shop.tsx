@@ -7,9 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import {
   brands,
   categories,
-  colors,
   conditions,
-  occasions,
   products,
   sizes,
 } from "@/lib/catalog";
@@ -51,8 +49,6 @@ function Shop() {
   const [selSizes, setSizes] = useState<string[]>([]);
   const [selBrands, setBrands] = useState<string[]>([]);
   const [selConditions, setConditions] = useState<string[]>([]);
-  const [selOccasions, setOccasions] = useState<string[]>([]);
-  const [selColors, setColors] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(15000);
   const [sort, setSort] = useState<Sort>("newest");
   const [drawer, setDrawer] = useState(false);
@@ -63,8 +59,6 @@ function Shop() {
       (selSizes.length === 0 || selSizes.includes(p.size)) &&
       (selBrands.length === 0 || selBrands.includes(p.brand)) &&
       (selConditions.length === 0 || selConditions.includes(p.condition)) &&
-      (selOccasions.length === 0 || selOccasions.includes(p.occasion)) &&
-      (selColors.length === 0 || selColors.includes(p.color)) &&
       p.price <= maxPrice;
 
     const list = products.filter((p) => p.status === "published" && match(p));
@@ -77,7 +71,7 @@ function Shop() {
       );
     if (sort === "newest") sorted.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     return sorted;
-  }, [selCategories, selSizes, selBrands, selConditions, selOccasions, selColors, maxPrice, sort]);
+  }, [selCategories, selSizes, selBrands, selConditions, maxPrice, sort]);
 
   const filters = (
     <div className="space-y-8">
@@ -85,8 +79,6 @@ function Shop() {
       <Group label="Size" options={sizes} selected={selSizes} onToggle={(v) => setSizes(toggle(selSizes, v))} />
       <Group label="Condition" options={conditions} selected={selConditions} onToggle={(v) => setConditions(toggle(selConditions, v))} />
       <Group label="Brand" options={brands} selected={selBrands} onToggle={(v) => setBrands(toggle(selBrands, v))} />
-      <Group label="Occasion" options={occasions} selected={selOccasions} onToggle={(v) => setOccasions(toggle(selOccasions, v))} />
-      <Group label="Colour" options={colors} selected={selColors} onToggle={(v) => setColors(toggle(selColors, v))} />
       <div>
         <h3 className="type-eyebrow mb-3">Max price</h3>
         <input

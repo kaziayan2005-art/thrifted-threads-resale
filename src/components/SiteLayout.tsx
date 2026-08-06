@@ -6,10 +6,8 @@ import { useShop } from "@/store/shop";
 
 const nav = [
   { to: "/shop", label: "Shop" },
-  { to: "/our-story", label: "Our Story" },
-  { to: "/how-it-works", label: "How It Works" },
   { to: "/condition-guide", label: "Condition & Authenticity" },
-  { to: "/sustainability", label: "Impact" },
+  { to: "/our-story", label: "Our Story" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
@@ -19,7 +17,15 @@ function Header() {
   const wishlist = useShop((s) => s.wishlist);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-foreground/15 bg-background/95 backdrop-blur">
+    <header
+      className="sticky top-0 z-40"
+      style={{
+        background: "rgba(247, 237, 232, 0.92)",
+        backdropFilter: "blur(16px)",
+        borderBottom: "1px solid #E8C4C4",
+        boxShadow: "0 1px 20px rgba(125,71,87,0.07)",
+      }}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <button
           type="button"
@@ -27,19 +33,24 @@ function Header() {
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
+          style={{ color: "#7D4757" }}
         >
-          {open ? <X className="size-5" strokeWidth={1.25} /> : <Menu className="size-5" strokeWidth={1.25} />}
+          {open ? <X className="size-5" strokeWidth={1.5} /> : <Menu className="size-5" strokeWidth={1.5} />}
         </button>
 
         <Logo className="h-12 w-auto md:h-14" />
 
-        <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
           {nav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="type-eyebrow transition-opacity hover:opacity-60"
-              activeProps={{ className: "type-eyebrow underline underline-offset-4" }}
+              className="type-eyebrow transition-all"
+              style={{ color: "#2C1A1A", letterSpacing: "0.18em", fontSize: "0.65rem" }}
+              activeProps={{
+                className: "type-eyebrow",
+                style: { color: "#7D4757", borderBottom: "2px solid #7D4757", paddingBottom: "2px" },
+              }}
             >
               {item.label}
             </Link>
@@ -47,26 +58,35 @@ function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link to="/shop" aria-label="Search the shop" className="hidden sm:block">
-            <Search className="size-5" strokeWidth={1.25} />
+          <Link to="/shop" aria-label="Search the shop" className="hidden sm:block" style={{ color: "#7D4757" }}>
+            <Search className="size-5" strokeWidth={1.5} />
           </Link>
-          <Link to="/wishlist" aria-label={`Wishlist, ${wishlist.length} items`} className="relative">
-            <Heart className="size-5" strokeWidth={1.25} />
+          <Link to="/wishlist" aria-label={`Wishlist, ${wishlist.length} items`} className="relative" style={{ color: "#7D4757" }}>
+            <Heart className="size-5" strokeWidth={1.5} />
             {wishlist.length > 0 && <Dot n={wishlist.length} />}
           </Link>
-          <Link to="/cart" aria-label={`Cart, ${cart.length} items`} className="relative">
-            <ShoppingBag className="size-5" strokeWidth={1.25} />
+          <Link to="/cart" aria-label={`Cart, ${cart.length} items`} className="relative" style={{ color: "#7D4757" }}>
+            <ShoppingBag className="size-5" strokeWidth={1.5} />
             {cart.length > 0 && <Dot n={cart.length} />}
           </Link>
         </div>
       </div>
 
       {open && (
-        <nav aria-label="Mobile" className="border-t border-foreground/15 px-4 py-3 md:hidden">
-          <ul className="space-y-3">
+        <nav
+          aria-label="Mobile"
+          className="border-t px-4 py-4 md:hidden"
+          style={{ borderColor: "#E8C4C4", background: "rgba(247,237,232,0.98)" }}
+        >
+          <ul className="space-y-4">
             {nav.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} onClick={() => setOpen(false)} className="type-eyebrow">
+                <Link
+                  to={item.to}
+                  onClick={() => setOpen(false)}
+                  className="type-eyebrow block py-1"
+                  style={{ color: "#7D4757" }}
+                >
                   {item.label}
                 </Link>
               </li>
@@ -80,7 +100,10 @@ function Header() {
 
 function Dot({ n }: { n: number }) {
   return (
-    <span className="absolute -right-2 -top-1 grid size-4 place-items-center rounded-full bg-accent text-[10px] text-accent-foreground">
+    <span
+      className="absolute -right-2 -top-1 grid size-4 place-items-center rounded-full text-[10px]"
+      style={{ background: "#7D4757", color: "#FDF6F2", fontWeight: 700 }}
+    >
       {n}
     </span>
   );
@@ -88,7 +111,6 @@ function Dot({ n }: { n: number }) {
 
 const footerLinks = [
   { to: "/size-guide", label: "Size Guide" },
-  { to: "/journal", label: "Style Edit" },
   { to: "/faq", label: "FAQ" },
   { to: "/returns", label: "Returns & Exchanges" },
   { to: "/account", label: "Account" },
@@ -96,20 +118,32 @@ const footerLinks = [
 
 function Footer() {
   return (
-    <footer className="mt-24 border-t border-foreground/15">
+    <footer
+      className="mt-24"
+      style={{
+        borderTop: "1px solid #E8C4C4",
+        background: "linear-gradient(180deg, #F7EDE8 0%, #F0E4E8 100%)",
+      }}
+    >
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-3">
         <div>
           <Logo className="h-20 w-auto" />
-          <p className="type-caption mt-4 max-w-xs">
+          <p className="type-caption mt-4 max-w-xs" style={{ color: "#8A6A6A" }}>
             Pre-loved luxury, graded by hand in Lahore. One of everything, never restocked.
           </p>
         </div>
         <div>
-          <h2 className="type-eyebrow mb-4">Good to know</h2>
-          <ul className="space-y-2 text-sm">
+          <h2 className="type-eyebrow mb-5" style={{ color: "#7D4757" }}>Good to know</h2>
+          <ul className="space-y-3 text-sm">
             {footerLinks.map((l) => (
               <li key={l.to}>
-                <Link to={l.to} className="hover:underline underline-offset-4">
+                <Link
+                  to={l.to}
+                  className="transition-colors"
+                  style={{ color: "#5A3A3A" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "#7D4757")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "#5A3A3A")}
+                >
                   {l.label}
                 </Link>
               </li>
@@ -117,22 +151,31 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <h2 className="type-eyebrow mb-4">Talk to us</h2>
-          <p className="text-sm">
+          <h2 className="type-eyebrow mb-5" style={{ color: "#7D4757" }}>Talk to us</h2>
+          <p className="text-sm" style={{ color: "#6A4A4A" }}>
             WhatsApp is our fastest channel — order updates and styling questions both live there.
           </p>
           <a
             href="https://wa.me/923000000000"
-            className="ink-tag mt-4 hover:bg-secondary"
             rel="noreferrer noopener"
             target="_blank"
+            className="mt-5 inline-flex items-center gap-2 transition-opacity hover:opacity-80"
+            style={{
+              background: "#7D4757",
+              color: "#FDF6F2",
+              padding: "0.6rem 1.25rem",
+              borderRadius: "0.5rem",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              boxShadow: "0 3px 12px rgba(125,71,87,0.25)",
+            }}
           >
             Message on WhatsApp
           </a>
         </div>
       </div>
       <div className="mx-auto max-w-6xl px-4 pb-10">
-        <div className="ink-rule mb-4" />
+        <div style={{ height: "1.5px", background: "linear-gradient(to right, #E8C4C4, #C8C0D8, #E8C4C4)", borderRadius: "9px", marginBottom: "1rem", opacity: 0.7 }} />
         <p className="type-caption">© {new Date().getFullYear()} Thrifted Threads. Every piece has a past.</p>
       </div>
     </footer>

@@ -23,9 +23,18 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SizeGuideRouteImport } from './routes/size-guide'
 import { Route as SustainabilityRouteImport } from './routes/sustainability'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLayoutRouteImport } from './routes/admin/_layout'
+import { Route as AdminGradingRouteImport } from './routes/admin/grading'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
+import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
 import { Route as JournalIndexRouteImport } from './routes/journal.index'
 import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as AdminListingsIndexRouteImport } from './routes/admin/listings/index'
+import { Route as AdminListingsNewRouteImport } from './routes/admin/listings/new'
+import { Route as AdminListingsIdEditRouteImport } from './routes/admin/listings/$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,6 +106,36 @@ const WishlistRoute = WishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLayoutRoute = AdminLayoutRouteImport.update({
+  id: '/admin/_layout',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGradingRoute = AdminGradingRouteImport.update({
+  id: '/admin/grading',
+  path: '/admin/grading',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JournalIndexRoute = JournalIndexRouteImport.update({
   id: '/journal/',
   path: '/journal/',
@@ -110,6 +149,21 @@ const JournalSlugRoute = JournalSlugRouteImport.update({
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminListingsIndexRoute = AdminListingsIndexRouteImport.update({
+  id: '/admin/listings/',
+  path: '/admin/listings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminListingsNewRoute = AdminListingsNewRouteImport.update({
+  id: '/admin/listings/new',
+  path: '/admin/listings/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminListingsIdEditRoute = AdminListingsIdEditRouteImport.update({
+  id: '/admin/listings/$id/edit',
+  path: '/admin/listings/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -128,9 +182,18 @@ export interface FileRoutesByFullPath {
   '/size-guide': typeof SizeGuideRoute
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
+  '/admin': typeof AdminLayoutRoute
+  '/admin/grading': typeof AdminGradingRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/journal/': typeof JournalIndexRoute
+  '/admin/listings/new': typeof AdminListingsNewRoute
+  '/admin/listings/': typeof AdminListingsIndexRoute
+  '/admin/listings/$id/edit': typeof AdminListingsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,9 +210,17 @@ export interface FileRoutesByTo {
   '/size-guide': typeof SizeGuideRoute
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/grading': typeof AdminGradingRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/journal': typeof JournalIndexRoute
+  '/admin/listings/new': typeof AdminListingsNewRoute
+  '/admin/listings': typeof AdminListingsIndexRoute
+  '/admin/listings/$id/edit': typeof AdminListingsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,9 +238,18 @@ export interface FileRoutesById {
   '/size-guide': typeof SizeGuideRoute
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/_layout': typeof AdminLayoutRoute
+  '/admin/grading': typeof AdminGradingRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/journal/': typeof JournalIndexRoute
+  '/admin/listings/new': typeof AdminListingsNewRoute
+  '/admin/listings/': typeof AdminListingsIndexRoute
+  '/admin/listings/$id/edit': typeof AdminListingsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,9 +268,18 @@ export interface FileRouteTypes {
     | '/size-guide'
     | '/sustainability'
     | '/wishlist'
+    | '/admin'
+    | '/admin/grading'
+    | '/admin/login'
+    | '/admin/orders'
+    | '/admin/reviews'
     | '/journal/$slug'
     | '/product/$slug'
+    | '/admin/'
     | '/journal/'
+    | '/admin/listings/new'
+    | '/admin/listings/'
+    | '/admin/listings/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,9 +296,17 @@ export interface FileRouteTypes {
     | '/size-guide'
     | '/sustainability'
     | '/wishlist'
+    | '/admin'
+    | '/admin/grading'
+    | '/admin/login'
+    | '/admin/orders'
+    | '/admin/reviews'
     | '/journal/$slug'
     | '/product/$slug'
     | '/journal'
+    | '/admin/listings/new'
+    | '/admin/listings'
+    | '/admin/listings/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -226,9 +323,18 @@ export interface FileRouteTypes {
     | '/size-guide'
     | '/sustainability'
     | '/wishlist'
+    | '/admin/_layout'
+    | '/admin/grading'
+    | '/admin/login'
+    | '/admin/orders'
+    | '/admin/reviews'
     | '/journal/$slug'
     | '/product/$slug'
+    | '/admin/'
     | '/journal/'
+    | '/admin/listings/new'
+    | '/admin/listings/'
+    | '/admin/listings/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -246,9 +352,18 @@ export interface RootRouteChildren {
   SizeGuideRoute: typeof SizeGuideRoute
   SustainabilityRoute: typeof SustainabilityRoute
   WishlistRoute: typeof WishlistRoute
+  AdminLayoutRoute: typeof AdminLayoutRoute
+  AdminGradingRoute: typeof AdminGradingRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   JournalSlugRoute: typeof JournalSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   JournalIndexRoute: typeof JournalIndexRoute
+  AdminListingsNewRoute: typeof AdminListingsNewRoute
+  AdminListingsIndexRoute: typeof AdminListingsIndexRoute
+  AdminListingsIdEditRoute: typeof AdminListingsIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,6 +466,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_layout': {
+      id: '/admin/_layout'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/grading': {
+      id: '/admin/grading'
+      path: '/admin/grading'
+      fullPath: '/admin/grading'
+      preLoaderRoute: typeof AdminGradingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journal/': {
       id: '/journal/'
       path: '/journal'
@@ -372,6 +529,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/listings/': {
+      id: '/admin/listings/'
+      path: '/admin/listings'
+      fullPath: '/admin/listings/'
+      preLoaderRoute: typeof AdminListingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/listings/new': {
+      id: '/admin/listings/new'
+      path: '/admin/listings/new'
+      fullPath: '/admin/listings/new'
+      preLoaderRoute: typeof AdminListingsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/listings/$id/edit': {
+      id: '/admin/listings/$id/edit'
+      path: '/admin/listings/$id/edit'
+      fullPath: '/admin/listings/$id/edit'
+      preLoaderRoute: typeof AdminListingsIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -390,10 +568,29 @@ const rootRouteChildren: RootRouteChildren = {
   SizeGuideRoute: SizeGuideRoute,
   SustainabilityRoute: SustainabilityRoute,
   WishlistRoute: WishlistRoute,
+  AdminLayoutRoute: AdminLayoutRoute,
+  AdminGradingRoute: AdminGradingRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   JournalSlugRoute: JournalSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  AdminIndexRoute: AdminIndexRoute,
   JournalIndexRoute: JournalIndexRoute,
+  AdminListingsNewRoute: AdminListingsNewRoute,
+  AdminListingsIndexRoute: AdminListingsIndexRoute,
+  AdminListingsIdEditRoute: AdminListingsIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
