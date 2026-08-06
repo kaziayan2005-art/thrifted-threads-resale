@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/logo.png.asset.json";
 
-export function Logo({ className = "h-14 w-auto" }: { className?: string }) {
+export function Logo({ className = "h-14 w-auto", style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <Link to="/" aria-label="Thrifted Threads — home" className="inline-flex">
+    <Link to="/" aria-label="Thrifted Threads — home" className="inline-flex items-center">
       <img
-        src={logo.url}
-        alt="Thrifted Threads — hand-drawn hanger logo"
-        className={`${className} mix-blend-multiply`}
+        src="/thriftlogo.png"
+        alt="Thrifted Threads logo — hanger with tassels"
+        className={className}
+        style={{ mixBlendMode: "multiply", ...style }}
         width={1080}
         height={1080}
       />
