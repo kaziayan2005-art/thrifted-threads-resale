@@ -63,6 +63,12 @@ export function useListings(filters: ListingFilters = {}) {
         if (filters.brands?.length) list = list.filter(p => filters.brands!.includes(p.brand));
         if (filters.conditions?.length) list = list.filter(p => filters.conditions!.includes(p.condition));
         if (filters.maxPrice) list = list.filter(p => p.price <= filters.maxPrice!);
+        const mockConditionRank = new Map<string, number>([
+          ["New with Tags", 0], ["Photoshoot Sample", 1], ["Worn Once", 2], ["Gently Used", 3],
+        ]);
+        if (filters.sort === "price-asc")  list = [...list].sort((a, b) => a.price - b.price);
+        if (filters.sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
+        if (filters.sort === "condition")  list = [...list].sort((a, b) => (mockConditionRank.get(a.condition) ?? 9) - (mockConditionRank.get(b.condition) ?? 9));
         return list;
       }
 
@@ -82,10 +88,20 @@ export function useListings(filters: ListingFilters = {}) {
       const { data, error } = await query;
       if (error) throw error;
 
-      return (data ?? []).map(l => {
+      const mapped = (data ?? []).map(l => {
         const { listing_photos, ...listing } = l as Listing & { listing_photos: ListingPhoto[] };
         return toProduct(listing, listing_photos ?? []);
       });
+
+      // Client-side sort (all 20–40 items in memory — cheap)
+      const conditionRank = new Map<string, number>([
+        ["New with Tags", 0], ["Photoshoot Sample", 1], ["Worn Once", 2], ["Gently Used", 3],
+      ]);
+      if (filters.sort === "price-asc")  mapped.sort((a, b) => a.price - b.price);
+      if (filters.sort === "price-desc") mapped.sort((a, b) => b.price - a.price);
+      if (filters.sort === "condition")  mapped.sort((a, b) => (conditionRank.get(a.condition) ?? 9) - (conditionRank.get(b.condition) ?? 9));
+
+      return mapped;
     },
     staleTime: 1000 * 60 * 2, // 2 min cache
   });
@@ -149,6 +165,60 @@ export function useCreateListing() {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-listings"] }),
+  });
+}
+
+// ─── Admin: delete listing ────────────────────────────────────
+export function useDeleteListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // First delete associated photos from listing_photos table
+      await supabase.from("listing_photos").delete().eq("listing_id", id);
+      const { error } = await supabase.from("listings").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
+    },
+  });
+}
+
+// ─── Admin: duplicate listing ─────────────────────────────────
+export function useDuplicateListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Fetch source listing
+      const { data: source, error: fetchErr } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !source) throw fetchErr ?? new Error("Source listing not found");
+
+      const newSlug = `${source.slug}-copy-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newTitle = `${source.title} (Copy)`;
+
+      const { id: _, created_at: __, updated_at: ___, ...insertPayload } = source;
+      const { data: newListing, error: insertErr } = await supabase
+        .from("listings")
+        .insert({
+          ...insertPayload,
+          title: newTitle,
+          slug: newSlug,
+          status: "draft",
+        })
+        .select()
+        .single();
+      if (insertErr) throw insertErr;
+      return newListing;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-listings"] });
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
+    },
   });
 }
 

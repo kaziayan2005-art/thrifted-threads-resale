@@ -5,11 +5,15 @@ import {
 import { useAuth, useIsAdmin } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 
+import { isDeviceTrusted, setDeviceTrusted } from "./login";
+
 export const Route = createFileRoute("/admin/_layout")({
   beforeLoad: async () => {
-    // Server-side guard: check Supabase session + admin role
+    // Check Supabase session + admin role + trusted device flag
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw redirect({ to: "/admin/login" });
+    if (!session || !isDeviceTrusted()) {
+      throw redirect({ to: "/admin/login" });
+    }
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -26,8 +30,9 @@ const navItems = [
   { to: "/admin",           label: "Dashboard",   icon: LayoutDashboard },
   { to: "/admin/listings",  label: "Listings",     icon: ShoppingBag },
   { to: "/admin/orders",    label: "Orders",       icon: Package },
+  { to: "/admin/customers", label: "Customers",    icon: Users },
   { to: "/admin/reviews",   label: "Reviews",      icon: Star },
-  { to: "/admin/grading",   label: "Grading Scale",icon: Tag },
+  { to: "/admin/settings",  label: "Settings",     icon: Settings },
 ] as const;
 
 function AdminLayout() {
@@ -82,7 +87,10 @@ function AdminLayout() {
             <p style={{ color: "#8A6A6A", fontSize: "0.7rem" }}>Administrator</p>
           </div>
           <button
-            onClick={() => signOut()}
+            onClick={async () => {
+              setDeviceTrusted(false);
+              await signOut();
+            }}
             style={{
               display: "flex", alignItems: "center", gap: "8px",
               width: "100%", padding: "9px 12px", borderRadius: "8px",
@@ -124,17 +132,29 @@ export function AdminBreadcrumb({ items }: { items: { label: string; to?: string
 }
 
 // ─── Stat card ────────────────────────────────────────────────
-export function StatCard({ label, value, color = "#7D4757" }: { label: string; value: number | string; color?: string }) {
-  return (
+export function StatCard({ label, value, color = "#7D4757", to, search }: { label: string; value: number | string; color?: string; to?: string; search?: Record<string, string> }) {
+  const content = (
     <div style={{
       background: "#FFFBFC", borderRadius: "12px", padding: "20px 24px",
       border: "1.5px solid #E8C4C4",
       boxShadow: "0 2px 12px rgba(125,71,87,0.06)",
+      transition: "transform 0.15s, border-color 0.15s",
+      cursor: to ? "pointer" : "default",
     }}>
       <p style={{ fontSize: "0.72rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "#8A6A6A", marginBottom: "8px" }}>{label}</p>
       <p style={{ fontSize: "2rem", fontWeight: 700, color, fontFamily: "'Kalam', cursive" }}>{value}</p>
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} search={search} style={{ textDecoration: "none" }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 // ─── Page header ─────────────────────────────────────────────

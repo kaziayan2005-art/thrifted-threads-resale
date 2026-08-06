@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
-import type { User, Session } from "@supabase/supabase-js";
+import type { User, Session, AuthResponse } from "@supabase/supabase-js";
 import { supabase, isMockMode } from "@/lib/supabase";
 import type { Profile } from "@/lib/database.types";
 
@@ -10,14 +10,16 @@ interface AuthContextValue {
   role: "buyer" | "admin" | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ data: AuthResponse["data"] | null; error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null, session: null, profile: null, role: null, loading: true,
   signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null }),
+  signUp: async () => ({ data: null, error: null }),
+  signInWithGoogle: async () => ({ error: null }),
   signOut: async () => {},
 });
 
@@ -65,9 +67,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { name } },
+    const res = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: `${window.location.origin}/account`,
+      },
+    });
+    return { data: res.data, error: res.error as Error | null };
+  };
+
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/account`,
+      },
     });
     return { error: error as Error | null };
   };
@@ -81,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, session, profile,
       role: profile?.role ?? null,
-      loading, signIn, signUp, signOut,
+      loading, signIn, signUp, signInWithGoogle, signOut,
     }}>
       {children}
     </AuthContext.Provider>

@@ -25,10 +25,13 @@ import { Route as SustainabilityRouteImport } from './routes/sustainability'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminLayoutRouteImport } from './routes/admin/_layout'
+import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminGradingRouteImport } from './routes/admin/grading'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as JournalIndexRouteImport } from './routes/journal.index'
 import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
@@ -116,6 +119,11 @@ const AdminLayoutRoute = AdminLayoutRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/admin/customers',
+  path: '/admin/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminGradingRoute = AdminGradingRouteImport.update({
   id: '/admin/grading',
   path: '/admin/grading',
@@ -135,6 +143,16 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/admin/reviews',
   path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => CheckoutRoute,
 } as any)
 const JournalIndexRoute = JournalIndexRouteImport.update({
   id: '/journal/',
@@ -171,7 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/condition-guide': typeof ConditionGuideRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -183,10 +201,13 @@ export interface FileRoutesByFullPath {
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
   '/admin': typeof AdminLayoutRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/grading': typeof AdminGradingRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -199,7 +220,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/condition-guide': typeof ConditionGuideRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -211,10 +232,13 @@ export interface FileRoutesByTo {
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/grading': typeof AdminGradingRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/journal': typeof JournalIndexRoute
@@ -227,7 +251,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/condition-guide': typeof ConditionGuideRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -239,10 +263,13 @@ export interface FileRoutesById {
   '/sustainability': typeof SustainabilityRoute
   '/wishlist': typeof WishlistRoute
   '/admin/_layout': typeof AdminLayoutRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/grading': typeof AdminGradingRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -269,10 +296,13 @@ export interface FileRouteTypes {
     | '/sustainability'
     | '/wishlist'
     | '/admin'
+    | '/admin/customers'
     | '/admin/grading'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/reviews'
+    | '/admin/settings'
+    | '/checkout/success'
     | '/journal/$slug'
     | '/product/$slug'
     | '/admin/'
@@ -297,10 +327,13 @@ export interface FileRouteTypes {
     | '/sustainability'
     | '/wishlist'
     | '/admin'
+    | '/admin/customers'
     | '/admin/grading'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/reviews'
+    | '/admin/settings'
+    | '/checkout/success'
     | '/journal/$slug'
     | '/product/$slug'
     | '/journal'
@@ -324,10 +357,13 @@ export interface FileRouteTypes {
     | '/sustainability'
     | '/wishlist'
     | '/admin/_layout'
+    | '/admin/customers'
     | '/admin/grading'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/reviews'
+    | '/admin/settings'
+    | '/checkout/success'
     | '/journal/$slug'
     | '/product/$slug'
     | '/admin/'
@@ -341,7 +377,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   ConditionGuideRoute: typeof ConditionGuideRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -353,10 +389,12 @@ export interface RootRouteChildren {
   SustainabilityRoute: typeof SustainabilityRoute
   WishlistRoute: typeof WishlistRoute
   AdminLayoutRoute: typeof AdminLayoutRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
   AdminGradingRoute: typeof AdminGradingRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   JournalSlugRoute: typeof JournalSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -480,6 +518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/admin/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/grading': {
       id: '/admin/grading'
       path: '/admin/grading'
@@ -507,6 +552,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/reviews'
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof CheckoutRoute
     }
     '/journal/': {
       id: '/journal/'
@@ -553,11 +612,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CheckoutRouteChildren {
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   ConditionGuideRoute: ConditionGuideRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
@@ -569,10 +640,12 @@ const rootRouteChildren: RootRouteChildren = {
   SustainabilityRoute: SustainabilityRoute,
   WishlistRoute: WishlistRoute,
   AdminLayoutRoute: AdminLayoutRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
   AdminGradingRoute: AdminGradingRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   JournalSlugRoute: JournalSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
   AdminIndexRoute: AdminIndexRoute,

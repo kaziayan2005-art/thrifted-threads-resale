@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { formatPKR, getById } from "@/lib/catalog";
+import { formatPKR } from "@/lib/catalog";
 import { useShop } from "@/store/shop";
+import { useListings } from "@/hooks/useListings";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -20,7 +21,13 @@ export const Route = createFileRoute("/cart")({
 function Cart() {
   const cart = useShop((s) => s.cart);
   const remove = useShop((s) => s.removeFromCart);
-  const items = cart.map(getById).filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+  // Use real listings (Supabase or mock) to resolve cart IDs → product data
+  const { data: allListings = [], isLoading } = useListings();
+  const items = cart
+    .map((id) => allListings.find((l) => l.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
   const subtotal = items.reduce((sum, p) => sum + p.price, 0);
   const bundleEligible = items.length >= 3;
   const discount = bundleEligible ? Math.round(subtotal * 0.1) : 0;
@@ -30,7 +37,20 @@ function Cart() {
       <PageHeader eyebrow="Checkout" title="Your bag" intro="Pieces stay reserved for 20 minutes once you start checkout." />
       <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-24 lg:grid-cols-[1fr_20rem]">
         <div>
-          {items.length === 0 ? (
+          {isLoading && cart.length > 0 ? (
+            <div className="space-y-4 animate-pulse">
+              {cart.map((id) => (
+                <div key={id} className="flex gap-4 py-5">
+                  <div className="size-24 rounded bg-secondary/60" />
+                  <div className="flex-1 space-y-2 pt-2">
+                    <div className="h-3 w-1/4 rounded bg-secondary/60" />
+                    <div className="h-4 w-1/2 rounded bg-secondary/60" />
+                    <div className="h-3 w-1/3 rounded bg-secondary/40" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : items.length === 0 ? (
             <div className="ink-frame border-dashed p-12 text-center">
               <p className="type-h3">Nothing hanging here yet.</p>
               <Link to="/shop" className="ink-tag mt-4 inline-flex hover:bg-secondary">
@@ -41,7 +61,13 @@ function Cart() {
             <ul className="divide-y divide-border">
               {items.map((p) => (
                 <li key={p.id} className="flex gap-4 py-5">
-                  <img src={p.image} alt={p.imageAlt} loading="lazy" width={800} height={1000} className="ink-frame size-24 object-cover" />
+                  {p.image ? (
+                    <img src={p.image} alt={p.imageAlt} loading="lazy" width={800} height={1000} className="ink-frame size-24 object-cover" />
+                  ) : (
+                    <div className="ink-frame size-24 flex items-center justify-center bg-secondary/20">
+                      <span className="type-caption text-muted-foreground text-xs">—</span>
+                    </div>
+                  )}
                   <div className="flex-1">
                     <p className="type-eyebrow text-muted-foreground">{p.brand}</p>
                     <Link to="/product/$slug" params={{ slug: p.slug }} className="text-sm font-medium hover:underline">

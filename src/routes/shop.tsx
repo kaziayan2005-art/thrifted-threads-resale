@@ -1,17 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { ProductCard } from "@/components/ProductCard";
-import {
-  brands,
-  categories,
-  conditions,
-  products,
-  sizes,
-} from "@/lib/catalog";
-import type { Product } from "@/types";
+import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
+import { brands, conditions, sizes } from "@/lib/catalog";
+import { useListings } from "@/hooks/useListings";
 
 interface ShopSearch {
   category?: string | undefined;
@@ -37,15 +31,12 @@ export const Route = createFileRoute("/shop")({
 });
 
 type Sort = "newest" | "price-asc" | "price-desc" | "condition";
-const conditionRank = new Map(conditions.map((c, i) => [c, i]));
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
 function Shop() {
-  const { category } = Route.useSearch();
-  const [selCategories, setCategories] = useState<string[]>(category ? [category] : []);
   const [selSizes, setSizes] = useState<string[]>([]);
   const [selBrands, setBrands] = useState<string[]>([]);
   const [selConditions, setConditions] = useState<string[]>([]);
@@ -53,29 +44,17 @@ function Shop() {
   const [sort, setSort] = useState<Sort>("newest");
   const [drawer, setDrawer] = useState(false);
 
-  const results = useMemo(() => {
-    const match = (p: Product) =>
-      (selCategories.length === 0 || selCategories.includes(p.category)) &&
-      (selSizes.length === 0 || selSizes.includes(p.size)) &&
-      (selBrands.length === 0 || selBrands.includes(p.brand)) &&
-      (selConditions.length === 0 || selConditions.includes(p.condition)) &&
-      p.price <= maxPrice;
-
-    const list = products.filter((p) => p.status === "published" && match(p));
-    const sorted = [...list];
-    if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
-    if (sort === "condition")
-      sorted.sort(
-        (a, b) => (conditionRank.get(a.condition) ?? 9) - (conditionRank.get(b.condition) ?? 9),
-      );
-    if (sort === "newest") sorted.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
-    return sorted;
-  }, [selCategories, selSizes, selBrands, selConditions, maxPrice, sort]);
+  // Pass filters directly to hook — handled for both Supabase and mock modes
+  const { data: results = [], isLoading } = useListings({
+    sizes: selSizes.length ? selSizes : undefined,
+    brands: selBrands.length ? selBrands : undefined,
+    conditions: selConditions.length ? selConditions : undefined,
+    maxPrice: maxPrice < 15000 ? maxPrice : undefined,
+    sort,
+  });
 
   const filters = (
     <div className="space-y-8">
-      <Group label="Category" options={categories} selected={selCategories} onToggle={(v) => setCategories(toggle(selCategories, v))} />
       <Group label="Size" options={sizes} selected={selSizes} onToggle={(v) => setSizes(toggle(selSizes, v))} />
       <Group label="Condition" options={conditions} selected={selConditions} onToggle={(v) => setConditions(toggle(selConditions, v))} />
       <Group label="Brand" options={brands} selected={selBrands} onToggle={(v) => setBrands(toggle(selBrands, v))} />
@@ -111,7 +90,9 @@ function Shop() {
 
         <div className="min-w-0 flex-1">
           <div className="mb-6 flex items-center justify-between gap-4">
-            <p className="type-caption">{results.length} pieces</p>
+            <p className="type-caption">
+              {isLoading ? "Loading…" : `${results.length} pieces`}
+            </p>
             <div className="flex items-center gap-3">
               <label className="type-eyebrow" htmlFor="sort">
                 Sort
@@ -138,10 +119,18 @@ function Shop() {
             </div>
           </div>
 
-          {results.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : results.length === 0 ? (
             <div className="ink-frame border-dashed p-12 text-center">
               <p className="type-h3">The rail is empty here.</p>
-              <p className="type-caption mt-2">Loosen a filter — everything is one-of-one, so combinations run thin.</p>
+              <p className="type-caption mt-2">
+                Loosen a filter — everything is one-of-one, so combinations run thin.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-3">

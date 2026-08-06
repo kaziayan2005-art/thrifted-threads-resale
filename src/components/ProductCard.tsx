@@ -18,14 +18,28 @@ export function ProductCard({ product }: { product: Product }) {
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
       >
         <div className="ink-frame overflow-hidden">
-          <img
-            src={product.image}
-            alt={product.imageAlt}
-            loading="lazy"
-            width={800}
-            height={1000}
-            className="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.imageAlt}
+              loading="lazy"
+              width={800}
+              height={1000}
+              className="aspect-4/5 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div
+              className="aspect-[4/5] w-full flex flex-col items-center justify-center gap-2"
+              style={{ background: "linear-gradient(160deg, #F5E8EE 0%, #EEE8F5 100%)" }}
+            >
+              <span style={{ fontFamily: "'Kalam', cursive", fontSize: "1.2rem", color: "#7D4757", opacity: 0.5 }}>
+                TT
+              </span>
+              <span className="type-caption text-center px-3" style={{ color: "#8A6A6A", fontSize: "0.65rem" }}>
+                {product.name}
+              </span>
+            </div>
+          )}
         </div>
         <div className="mt-3 space-y-1">
           <p className="type-eyebrow text-muted-foreground">{product.brand}</p>

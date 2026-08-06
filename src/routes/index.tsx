@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Leaf, Ruler, ScanLine, Sparkles } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
-import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/lib/catalog";
+import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
+import { useListings } from "@/hooks/useListings";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,8 +32,9 @@ const trust = [
 ];
 
 function Home() {
-  const arrivals = products.slice(0, 8);
-  const best = products.filter((p) => p.bestSeller);
+  const { data: listings = [], isLoading } = useListings();
+  const arrivals = listings.slice(0, 8);
+  const best = listings.filter((p) => p.bestSeller);
 
   return (
     <SiteLayout>
@@ -208,9 +209,9 @@ function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-          {arrivals.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {isLoading
+            ? [...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)
+            : arrivals.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
 
@@ -219,9 +220,11 @@ function Home() {
         <div className="mx-auto max-w-6xl px-4 py-16">
           <h2 className="type-h2 mb-8">Best loved this month</h2>
           <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-            {best.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {isLoading
+              ? [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
+              : best.length > 0
+                ? best.map((p) => <ProductCard key={p.id} product={p} />)
+                : arrivals.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </div>
       </section>

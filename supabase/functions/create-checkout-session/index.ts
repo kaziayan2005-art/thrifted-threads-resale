@@ -1,12 +1,6 @@
-// Supabase Edge Function — Create Stripe Checkout Session
-// Deployed as: supabase/functions/create-checkout-session/index.ts
-// Business rule: 100% advance payment — card only, no COD
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-04-10" });
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +11,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      return new Response(
+        JSON.stringify({ error: "STRIPE_SECRET_KEY environment variable is missing in Supabase Secrets." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10" });
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -28,9 +32,13 @@ serve(async (req) => {
       shippingAddress: { name: string; phone: string; email: string; address: string; city: string; postal?: string };
     };
 
-    if (!listingIds?.length) throw new Error("No listings provided");
+    if (!listingIds?.length) {
+      return new Response(
+        JSON.stringify({ error: "No listings provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Fetch listings from DB
     const { data: listings, error: fetchError } = await supabase
       .from("listings")
       .select("id, title, resale_price, slug")
@@ -38,9 +46,13 @@ serve(async (req) => {
       .eq("status", "published");
 
     if (fetchError) throw fetchError;
-    if (!listings?.length) throw new Error("No published listings found for given IDs");
+    if (!listings?.length) {
+      return new Response(
+        JSON.stringify({ error: "No published listings found for the selected items." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Atomic reservation — attempt_reserve for each listing
     for (const listing of listings) {
       const { data: reserved } = await supabase.rpc("attempt_reserve", { p_listing_id: listing.id });
       if (!reserved) {
@@ -51,7 +63,6 @@ serve(async (req) => {
       }
     }
 
-    // Get the authenticated user (if logged in)
     const authHeader = req.headers.get("Authorization");
     let buyerId: string | null = null;
     if (authHeader) {
@@ -59,7 +70,6 @@ serve(async (req) => {
       buyerId = user?.id ?? null;
     }
 
-    // Create a pending order row
     const total = listings.reduce((sum, l) => sum + l.resale_price, 0);
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -74,7 +84,6 @@ serve(async (req) => {
       .single();
     if (orderError) throw orderError;
 
-    // Insert order items (snapshot listing details)
     await supabase.from("order_items").insert(
       listings.map(l => ({
         order_id: order.id,
@@ -84,8 +93,7 @@ serve(async (req) => {
       }))
     );
 
-    // Create Stripe Checkout Session
-    const origin = req.headers.get("origin") ?? "http://localhost:3000";
+    const origin = req.headers.get("origin") ?? "http://localhost:8080";
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -101,10 +109,9 @@ serve(async (req) => {
       metadata: { order_id: order.id, listing_ids: listingIds.join(",") },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout`,
-      expires_at: Math.floor(Date.now() / 1000) + 20 * 60, // 20-minute reservation window
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30-minute reservation window (Stripe minimum requirement)
     });
 
-    // Store Stripe session ID on the order
     await supabase.from("orders").update({ stripe_session_id: session.id }).eq("id", order.id);
 
     return new Response(

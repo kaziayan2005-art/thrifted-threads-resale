@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { useShop } from "@/store/shop";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthModal } from "./AuthModal";
 
 const nav = [
   { to: "/shop", label: "Shop" },
@@ -13,8 +15,10 @@ const nav = [
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const cart = useShop((s) => s.cart);
   const wishlist = useShop((s) => s.wishlist);
+  const { user, loading } = useAuth();
 
   return (
     <header
@@ -69,7 +73,24 @@ function Header() {
             <ShoppingBag className="size-5" strokeWidth={1.5} />
             {cart.length > 0 && <Dot n={cart.length} />}
           </Link>
+          {!loading && (
+            user ? (
+              <Link to="/account" aria-label="Your account" style={{ color: "#7D4757" }}>
+                <User className="size-5" strokeWidth={1.5} />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                aria-label="Sign in or create account"
+                onClick={() => setAuthOpen(true)}
+                style={{ color: "#7D4757" }}
+              >
+                <User className="size-5" strokeWidth={1.5} />
+              </button>
+            )
+          )}
         </div>
+        <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
 
       {open && (
@@ -91,6 +112,27 @@ function Header() {
                 </Link>
               </li>
             ))}
+            <li className="border-t pt-4" style={{ borderColor: "#E8C4C4" }}>
+              {user ? (
+                <Link
+                  to="/account"
+                  onClick={() => setOpen(false)}
+                  className="type-eyebrow block py-1"
+                  style={{ color: "#7D4757" }}
+                >
+                  Account
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setOpen(false); setAuthOpen(true); }}
+                  className="type-eyebrow block py-1"
+                  style={{ color: "#7D4757" }}
+                >
+                  Sign in / Sign up
+                </button>
+              )}
+            </li>
           </ul>
         </nav>
       )}

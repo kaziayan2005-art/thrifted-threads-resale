@@ -1,21 +1,38 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/admin/login")({
   component: AdminLogin,
 });
+
+const TRUSTED_DEVICE_KEY = "tt_admin_trusted_device";
+
+export function isDeviceTrusted(): boolean {
+  return localStorage.getItem(TRUSTED_DEVICE_KEY) === "true";
+}
+
+export function setDeviceTrusted(trusted: boolean): void {
+  if (trusted) {
+    localStorage.setItem(TRUSTED_DEVICE_KEY, "true");
+  } else {
+    localStorage.removeItem(TRUSTED_DEVICE_KEY);
+  }
+}
 
 function AdminLogin() {
   const { signIn, role, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [trustDevice, setTrustDevice] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Already logged in as admin → redirect
-  if (!loading && role === "admin") {
+  // Already logged in as admin AND device is trusted → redirect
+  if (!loading && role === "admin" && isDeviceTrusted()) {
     navigate({ to: "/admin" });
     return null;
   }
@@ -24,18 +41,32 @@ function AdminLogin() {
     e.preventDefault();
     setError("");
     setSubmitting(true);
+
     const { error: signInError } = await signIn(email, password);
     if (signInError) {
       setError("Invalid credentials. Please try again.");
       setSubmitting(false);
       return;
     }
-    // Role check happens inside AuthProvider — redirect after role loads
-    setTimeout(() => {
-      if (role === "admin") navigate({ to: "/admin" });
-      else setError("This account does not have admin access.");
+
+    // Use SECURITY DEFINER function — bypasses RLS, always returns correct role
+    const { data: myRole, error: roleError } = await supabase.rpc("get_my_role");
+
+    if (roleError) {
+      setError("Could not verify account role. Please try again.");
+      await supabase.auth.signOut();
       setSubmitting(false);
-    }, 800);
+      return;
+    }
+
+    if (myRole === "admin") {
+      setDeviceTrusted(trustDevice);
+      navigate({ to: "/admin" });
+    } else {
+      await supabase.auth.signOut();
+      setError("This account does not have admin access.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -72,7 +103,7 @@ function AdminLogin() {
             />
           </div>
 
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "18px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#5A3A3A", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "6px" }}>
               Password
             </label>
@@ -81,6 +112,21 @@ function AdminLogin() {
               placeholder="••••••••" required autoComplete="current-password"
               style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #E8C4C4", background: "#F9EEF2", color: "#2C1A1A", fontSize: "0.9rem", outline: "none", boxSizing: "border-box" }}
             />
+          </div>
+
+          {/* Trust this device checkbox */}
+          <div style={{ marginBottom: "24px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.82rem", color: "#5A3A3A" }}>
+              <input
+                type="checkbox"
+                checked={trustDevice}
+                onChange={(e) => setTrustDevice(e.target.checked)}
+                style={{ accentColor: "#7D4757", width: "16px", height: "16px", cursor: "pointer" }}
+              />
+              <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <ShieldCheck size={15} color="#7D4757" /> Trust this device (stay signed in)
+              </span>
+            </label>
           </div>
 
           {error && (
