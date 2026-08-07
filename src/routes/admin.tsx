@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, Package, Star, Tag, LogOut, ChevronRight, Menu, X, Users, Settings, Heart
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
+import { supabase, isMockMode } from "@/lib/supabase";
 import { isDeviceTrusted, setDeviceTrusted } from "./admin/login";
 
 export async function checkAdminAuth() {

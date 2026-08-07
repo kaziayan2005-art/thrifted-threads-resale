@@ -138,11 +138,6 @@ function AdminLogin() {
         setForgotSubmitting(false);
         return;
       }
-    } else {
-      // Mock mode: simulate success for testing
-      setForgotSubmitting(false);
-      setForgotSent(true);
-      return;
     }
 
     setForgotSubmitting(false);
