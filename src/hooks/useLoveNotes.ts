@@ -68,6 +68,7 @@ export const DEFAULT_LOVE_NOTES: LoveNote[] = [
 const LOCAL_STORAGE_KEY = "tt_love_notes_data";
 
 function getLocalNotes(): LoveNote[] {
+  if (typeof window === "undefined") return DEFAULT_LOVE_NOTES;
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -81,6 +82,7 @@ function getLocalNotes(): LoveNote[] {
 }
 
 function saveLocalNotes(notes: LoveNote[]) {
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notes));
     // Trigger custom event for same-tab reactive updates
