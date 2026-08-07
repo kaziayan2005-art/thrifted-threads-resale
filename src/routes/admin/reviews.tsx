@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, Star, MessageSquare } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../admin";
 
 export const Route = createFileRoute("/admin/reviews")({
   beforeLoad: checkAdminAuth,
@@ -66,12 +66,12 @@ function AdminReviews() {
   };
 
   return (
-    <div style={{ padding: "32px 36px" }}>
+    <div className="p-4 sm:p-6 lg:p-9">
       <AdminBreadcrumb items={[{ label: "Reviews" }]} />
-      <AdminPageHeader title="Review Moderation" />
+      <AdminPageHeader title="Customer Reviews Moderation" />
 
-      {/* Filter tabs */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+      {/* Filter Tabs */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
         {["pending", "approved", "rejected", ""].map((s) => (
           <button
             key={s}
@@ -86,6 +86,7 @@ function AdminReviews() {
               borderColor: statusFilter === s ? "#7D4757" : "#E8C4C4",
               background: statusFilter === s ? "#7D475714" : "#FFFBFC",
               color: statusFilter === s ? "#7D4757" : "#8A6A6A",
+              transition: "all 0.15s",
             }}
           >
             {s ? s.charAt(0).toUpperCase() + s.slice(1) : "All Reviews"}
@@ -94,7 +95,7 @@ function AdminReviews() {
       </div>
 
       {/* Dense Table Layout */}
-      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflow: "hidden" }}>
+      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflowX: "auto" }}>
         {isLoading ? (
           <p style={{ padding: "32px", color: "#8A6A6A", textAlign: "center" }}>Loading reviews for moderation…</p>
         ) : !reviews.length ? (

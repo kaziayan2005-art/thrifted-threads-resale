@@ -101,7 +101,7 @@ function Shop() {
                 id="sort"
                 value={sort}
                 onChange={(e) => setSort(e.target.value as Sort)}
-                className="border border-foreground bg-background px-3 py-2 text-sm"
+                className="border border-foreground bg-background px-3 py-2 text-sm text-center cursor-pointer"
               >
                 <option value="newest">Newest</option>
                 <option value="price-asc">Price, low to high</option>

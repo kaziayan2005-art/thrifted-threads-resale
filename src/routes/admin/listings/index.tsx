@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Plus, Eye, EyeOff, Edit3, Copy, Trash2, Search, Filter } from "lucide-react";
 import { useAdminListings, useUpdateListing, useDeleteListing, useDuplicateListing } from "@/hooks/useListings";
-import { AdminPageHeader, AdminBreadcrumb, checkAdminAuth } from "../_layout";
+import { AdminPageHeader, AdminBreadcrumb, checkAdminAuth } from "../../admin";
 import { brands, sizes, conditions } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/listings/")({
@@ -175,6 +175,7 @@ function AdminListings() {
             fontSize: "0.82rem",
             background: "#fff",
             color: "#2C1A1A",
+            textAlign: "center",
           }}
         >
           <option value="">All Brands</option>
@@ -196,6 +197,7 @@ function AdminListings() {
             fontSize: "0.82rem",
             background: "#fff",
             color: "#2C1A1A",
+            textAlign: "center",
           }}
         >
           <option value="">All Sizes</option>
@@ -217,6 +219,7 @@ function AdminListings() {
             fontSize: "0.82rem",
             background: "#fff",
             color: "#2C1A1A",
+            textAlign: "center",
           }}
         >
           <option value="">All Conditions</option>
@@ -239,6 +242,7 @@ function AdminListings() {
             background: "#F9EEF2",
             color: "#7D4757",
             fontWeight: 600,
+            textAlign: "center",
           }}
         >
           <option value="newest">Sort: Newest</option>
@@ -249,7 +253,7 @@ function AdminListings() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflow: "hidden" }}>
+      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflowX: "auto" }}>
         {isLoading ? (
           <p style={{ padding: "32px", color: "#8A6A6A", textAlign: "center" }}>Loading inventory listings…</p>
         ) : !filteredListings.length ? (

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../admin";
 import type { GradingDefinition } from "@/lib/database.types";
 
 export const Route = createFileRoute("/admin/grading")({
@@ -71,7 +71,7 @@ function AdminGrading() {
   const inputStyle = { width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1.5px solid #E8C4C4", background: "#fff", color: "#2C1A1A", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" as const };
 
   return (
-    <div style={{ padding: "32px 36px", maxWidth: "720px" }}>
+    <div className="p-4 sm:p-6 lg:p-9 max-w-3xl">
       <AdminBreadcrumb items={[{ label: "Grading Scale" }]} />
       <AdminPageHeader
         title="Grading Scale"

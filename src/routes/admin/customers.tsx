@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Search, ShoppingBag, Eye, X, Phone, Mail } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../admin";
 import { formatPKR } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/customers")({
@@ -96,7 +96,7 @@ function AdminCustomers() {
   }, [customers, search]);
 
   return (
-    <div style={{ padding: "32px 36px" }}>
+    <div className="p-4 sm:p-6 lg:p-9">
       <AdminBreadcrumb items={[{ label: "Customers" }]} />
       <AdminPageHeader title="Registered Customers" />
 
@@ -106,7 +106,6 @@ function AdminCustomers() {
           display: "flex",
           gap: "12px",
           marginBottom: "20px",
-          alignItems: "center",
           background: "#FFFBFC",
           padding: "12px 16px",
           borderRadius: "10px",
@@ -137,7 +136,7 @@ function AdminCustomers() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflow: "hidden" }}>
+      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflowX: "auto" }}>
         {isLoading ? (
           <p style={{ padding: "32px", color: "#8A6A6A", textAlign: "center" }}>Loading customer records…</p>
         ) : !filteredCustomers.length ? (

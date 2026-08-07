@@ -40,10 +40,44 @@ function Checkout() {
 
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [benefitsOpen, setBenefitsOpen] = useState(false);
+
+  const validateForm = (addr: { name: string; phone: string; email: string; address: string; city: string }) => {
+    const errs: Record<string, string> = {};
+
+    if (!addr.name.trim()) {
+      errs.name = "Full name is required";
+    }
+
+    if (!addr.phone.trim()) {
+      errs.phone = "Phone number is required";
+    } else {
+      const digitsOnly = addr.phone.replace(/\D/g, "");
+      if (digitsOnly.length !== 11) {
+        errs.phone = "Phone number must contain exactly 11 digits (e.g. 03001234567)";
+      }
+    }
+
+    if (!addr.email.trim()) {
+      errs.email = "Email address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr.email.trim())) {
+      errs.email = "Please enter a valid email address (e.g. name@domain.com)";
+    }
+
+    if (!addr.address.trim()) {
+      errs.address = "Street address is required";
+    }
+
+    if (!addr.city.trim()) {
+      errs.city = "City is required";
+    }
+
+    return errs;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,13 +86,20 @@ function Checkout() {
 
     const form = new FormData(e.currentTarget);
     const shippingAddress = {
-      name: form.get("name") as string,
-      phone: form.get("phone") as string,
-      email: form.get("email") as string,
-      address: form.get("address") as string,
-      city: form.get("city") as string,
-      postal: (form.get("postal") as string) || undefined,
+      name: ((form.get("name") as string) || "").trim(),
+      phone: ((form.get("phone") as string) || "").trim(),
+      email: ((form.get("email") as string) || "").trim(),
+      address: ((form.get("address") as string) || "").trim(),
+      city: ((form.get("city") as string) || "").trim(),
+      postal: ((form.get("postal") as string) || "").trim() || undefined,
     };
+
+    const errors = validateForm(shippingAddress);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
 
     setSubmitting(true);
     try {
@@ -142,13 +183,14 @@ function Checkout() {
       )}
 
       {apiError && (
-        <div className="mx-auto mb-6 flex max-w-6xl items-start gap-3 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 px-4">
+        <div className="mx-auto mb-6 flex max-w-6xl items-start gap-3 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{apiError}</span>
         </div>
       )}
 
       <form
+        noValidate
         className="mx-auto grid max-w-6xl gap-10 px-4 pb-24 lg:grid-cols-[1fr_20rem]"
         onSubmit={handleSubmit}
       >
@@ -158,24 +200,65 @@ function Checkout() {
             <legend className="type-h3 mb-4">Shipping Information</legend>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="text-sm">
-                Full name
-                <input className={field} name="name" autoComplete="name" required placeholder="Sara Ahmed" />
+                Full name <span className="text-red-500">*</span>
+                <input
+                  className={`${field} ${formErrors.name ? "border-red-500 bg-red-50/20" : ""}`}
+                  name="name"
+                  autoComplete="name"
+                  placeholder="Sara Ahmed"
+                />
+                {formErrors.name && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{formErrors.name}</p>
+                )}
               </label>
               <label className="text-sm">
-                Phone (WhatsApp)
-                <input className={field} name="phone" autoComplete="tel" required placeholder="+92 300 1234567" />
+                Phone (WhatsApp - 11 digits) <span className="text-red-500">*</span>
+                <input
+                  className={`${field} ${formErrors.phone ? "border-red-500 bg-red-50/20" : ""}`}
+                  name="phone"
+                  autoComplete="tel"
+                  placeholder="03001234567"
+                />
+                {formErrors.phone && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{formErrors.phone}</p>
+                )}
               </label>
               <label className="text-sm sm:col-span-2">
-                Email address
-                <input className={field} type="email" name="email" autoComplete="email" required placeholder="sara@example.com" />
+                Email address <span className="text-red-500">*</span>
+                <input
+                  className={`${field} ${formErrors.email ? "border-red-500 bg-red-50/20" : ""}`}
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder="sara@example.com"
+                />
+                {formErrors.email && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{formErrors.email}</p>
+                )}
               </label>
               <label className="text-sm sm:col-span-2">
-                Street address
-                <input className={field} name="address" autoComplete="street-address" required placeholder="House #, Street name, Sector" />
+                Street address <span className="text-red-500">*</span>
+                <input
+                  className={`${field} ${formErrors.address ? "border-red-500 bg-red-50/20" : ""}`}
+                  name="address"
+                  autoComplete="street-address"
+                  placeholder="House #, Street name, Sector"
+                />
+                {formErrors.address && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{formErrors.address}</p>
+                )}
               </label>
               <label className="text-sm">
-                City
-                <input className={field} name="city" autoComplete="address-level2" required placeholder="Karachi / Lahore / Islamabad" />
+                City <span className="text-red-500">*</span>
+                <input
+                  className={`${field} ${formErrors.city ? "border-red-500 bg-red-50/20" : ""}`}
+                  name="city"
+                  autoComplete="address-level2"
+                  placeholder="Karachi / Lahore / Islamabad"
+                />
+                {formErrors.city && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{formErrors.city}</p>
+                )}
               </label>
               <label className="text-sm">
                 Postal code

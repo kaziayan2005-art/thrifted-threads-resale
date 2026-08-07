@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Settings as SettingsIcon, Tag, ShieldCheck, CreditCard, Sliders, ChevronRight } from "lucide-react";
-import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../admin";
 import { useGradingScale, useCreateGrade, useDeleteGrade } from "@/hooks/useGrading";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -14,12 +14,12 @@ function AdminSettings() {
   const [activeTab, setActiveTab] = useState<"grading" | "store" | "general">("grading");
 
   return (
-    <div style={{ padding: "32px 36px" }}>
+    <div className="p-4 sm:p-6 lg:p-9">
       <AdminBreadcrumb items={[{ label: "Settings" }]} />
       <AdminPageHeader title="Store & Admin Settings" />
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "24px", borderBottom: "1.5px solid #E8C4C4", paddingBottom: "12px" }}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "24px", borderBottom: "1.5px solid #E8C4C4", paddingBottom: "12px", flexWrap: "wrap" }}>
         {[
           { id: "grading", label: "Grading Scale Config", icon: Tag },
           { id: "store", label: "Store Policies & Payments", icon: CreditCard },

@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ShoppingBag, TrendingUp, DollarSign, Award, ArrowUpRight, Download, FileText } from "lucide-react";
+import { ShoppingBag, TrendingUp, DollarSign, Award, ArrowUpRight, Download, FileText, Heart } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { StatCard, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { StatCard, AdminPageHeader, checkAdminAuth } from "../admin";
 import { formatPKR } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/")({
@@ -132,46 +132,170 @@ function useDashboardAnalytics() {
   });
 }
 
+function RevenueHoverCard({
+  children,
+  totalRevenue,
+  orderCount,
+  avgOrderValue,
+  topCategory,
+}: {
+  children: React.ReactNode;
+  totalRevenue: number;
+  orderCount: number;
+  avgOrderValue: number;
+  topCategory: string;
+}) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: "8px",
+            width: "250px",
+            background: "#2C1A1A",
+            color: "#FFFBFC",
+            borderRadius: "10px",
+            padding: "14px 16px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+            zIndex: 100,
+            pointerEvents: "none",
+            border: "1px solid #7D4757",
+            fontSize: "0.78rem",
+          }}
+        >
+          <p style={{ color: "#E8C4C4", fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 6px", fontWeight: 700 }}>
+            Revenue Breakdown
+          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+            <span style={{ color: "#B09090" }}>Total Sales:</span>
+            <span style={{ fontWeight: 700, color: "#FFFBFC" }}>{formatPKR(totalRevenue)}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+            <span style={{ color: "#B09090" }}>Paid Orders:</span>
+            <span style={{ fontWeight: 700, color: "#FFFBFC" }}>{orderCount} orders</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+            <span style={{ color: "#B09090" }}>Avg Order Value:</span>
+            <span style={{ fontWeight: 700, color: "#FFFBFC" }}>{formatPKR(avgOrderValue)}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "#B09090" }}>Top Category:</span>
+            <span style={{ fontWeight: 700, color: "#E8C4C4" }}>{topCategory}</span>
+          </div>
+          {/* Arrow indicator */}
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 0,
+              height: 0,
+              borderLeft: "6px solid transparent",
+              borderRight: "6px solid transparent",
+              borderTop: "6px solid #2C1A1A",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminDashboard() {
   const { data, isLoading } = useDashboardAnalytics();
   const [timeframe, setTimeframe] = useState<Timeframe>("daily");
 
+  // Date Range and Preset Controls
+  const [presetPeriod, setPresetPeriod] = useState<"daily" | "weekly" | "monthly" | "yearly" | "custom">("monthly");
+  const [fromDate, setFromDate] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  });
+  const [toDate, setToDate] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+
+  const handlePresetChange = (preset: "daily" | "weekly" | "monthly" | "yearly") => {
+    setPresetPeriod(preset);
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    setToDate(todayStr);
+
+    if (preset === "daily") {
+      setFromDate(todayStr);
+    } else if (preset === "weekly") {
+      const past = new Date();
+      past.setDate(now.getDate() - 7);
+      setFromDate(`${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, "0")}-${String(past.getDate()).padStart(2, "0")}`);
+    } else if (preset === "monthly") {
+      setFromDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`);
+    } else if (preset === "yearly") {
+      setFromDate(`${now.getFullYear()}-01-01`);
+    }
+  };
+
   const tfData = useMemo(() => timeframeData[timeframe], [timeframe]);
 
-  const exportCSV = () => {
+  const filteredOrders = useMemo(() => {
     const orders = data?.allPaidOrders ?? [
       { id: "TT-10428", total: 10100, status: "fulfilled", created_at: "2026-07-22T10:00:00Z" },
       { id: "TT-10391", total: 5800, status: "paid", created_at: "2026-07-09T14:30:00Z" },
+      { id: "TT-10385", total: 8600, status: "shipped", created_at: "2026-08-01T09:15:00Z" },
     ];
 
+    if (!fromDate && !toDate) return orders;
+
+    return orders.filter((o: any) => {
+      const oTime = new Date(o.created_at || Date.now()).getTime();
+      const fromTime = fromDate ? new Date(`${fromDate}T00:00:00`).getTime() : 0;
+      const toTime = toDate ? new Date(`${toDate}T23:59:59`).getTime() : Infinity;
+      return oTime >= fromTime && oTime <= toTime;
+    });
+  }, [data?.allPaidOrders, fromDate, toDate]);
+
+  const filteredTotalRevenue = useMemo(() => {
+    return filteredOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+  }, [filteredOrders]);
+
+  const exportCSV = () => {
     const headers = ["Order ID", "Total Amount (PKR)", "Status", "Date"];
-    const rows = orders.map((o: any) => [
+    const rows = filteredOrders.map((o: any) => [
       o.id,
       o.total,
       o.status,
       new Date(o.created_at || Date.now()).toLocaleDateString(),
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `thrifted_threads_revenue_${timeframe}_${Date.now()}.csv`);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `thrifted_threads_revenue_${fromDate || "all"}_to_${toDate || "present"}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const exportPDF = () => {
-    const windowPrint = window.open("", "", "width=800,height=600");
+    const windowPrint = window.open("", "_blank", "width=800,height=600");
     if (!windowPrint) return;
 
-    const orders = data?.allPaidOrders ?? [
-      { id: "TT-10428", total: 10100, status: "fulfilled", created_at: "2026-07-22T10:00:00Z" },
-      { id: "TT-10391", total: 5800, status: "paid", created_at: "2026-07-09T14:30:00Z" },
-    ];
-
-    const rowsHtml = orders.map((o: any) => `
+    const rowsHtml = filteredOrders.map((o: any) => `
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">${o.id}</td>
         <td style="padding: 8px; border: 1px solid #ddd;">PKR ${o.total?.toLocaleString()}</td>
@@ -185,22 +309,26 @@ function AdminDashboard() {
         <head>
           <title>Revenue Report - Thrifted Threads</title>
           <style>
-            body { font-family: sans-serif; padding: 20px; color: #2C1A1A; }
-            h1 { color: #7D4757; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            body { font-family: sans-serif; padding: 24px; color: #2C1A1A; }
+            h1 { color: #7D4757; margin-bottom: 6px; }
+            .sub { color: #8A6A6A; font-size: 0.9rem; margin-bottom: 20px; }
+            .summary-box { background: #F9EEF2; padding: 14px 18px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; border: 1px solid #E8C4C4; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
             th { background: #7D4757; color: white; padding: 10px; text-align: left; }
           </style>
         </head>
         <body>
           <h1>Thrifted Threads — Revenue Report</h1>
-          <p>Generated on: ${new Date().toLocaleString()}</p>
-          <p>Total Revenue: PKR ${(data?.totalRevenue ?? 24500).toLocaleString()}</p>
+          <div class="sub">Date Range: ${fromDate || "All time"} to ${toDate || "Present"} | Generated on: ${new Date().toLocaleString()}</div>
+          <div class="summary-box">
+            Total Filtered Revenue: PKR ${filteredTotalRevenue.toLocaleString()} (${filteredOrders.length} orders)
+          </div>
           <table>
             <thead>
               <tr><th>Order ID</th><th>Total</th><th>Status</th><th>Date</th></tr>
             </thead>
             <tbody>
-              ${rowsHtml}
+              ${rowsHtml || '<tr><td colspan="4" style="padding: 12px; text-align: center;">No orders found for selected date range.</td></tr>'}
             </tbody>
           </table>
         </body>
@@ -208,16 +336,32 @@ function AdminDashboard() {
     `);
     windowPrint.document.close();
     windowPrint.focus();
-    windowPrint.print();
-    windowPrint.close();
+    setTimeout(() => {
+      windowPrint.print();
+      windowPrint.close();
+    }, 250);
   };
 
   return (
-    <div style={{ padding: "32px 36px" }}>
+    <div className="p-4 sm:p-6 lg:p-9">
       <AdminPageHeader
         title="Admin Overview"
         action={
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to="/admin/love-notes"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "6px",
+                background: "#FFFBFC", border: "1.5px solid #E8C4C4",
+                padding: "8px 14px", borderRadius: "8px", fontSize: "0.82rem",
+                fontWeight: 600, color: "#7D4757", textDecoration: "none",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#7D4757"; e.currentTarget.style.color = "#FFF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#FFFBFC"; e.currentTarget.style.color = "#7D4757"; }}
+            >
+              <Heart size={14} /> Love Notes 💌
+            </Link>
             <button
               onClick={exportCSV}
               style={{
@@ -250,24 +394,54 @@ function AdminDashboard() {
         }
       />
 
+      {/* Date Range & Presets Filter Bar */}
+      <div className="bg-[#FFFBFC] border border-[#E8C4C4] rounded-xl p-4 mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#7D4757]">Period Presets:</span>
+          {(["daily", "weekly", "monthly", "yearly"] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => handlePresetChange(p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer ${
+                presetPeriod === p
+                  ? "bg-[#7D4757] text-white shadow-xs"
+                  : "bg-[#F9EEF2] text-[#8A6A6A] hover:bg-[#E8C4C4]/50"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="font-semibold text-[#8A6A6A]">From:</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => { setFromDate(e.target.value); setPresetPeriod("custom"); }}
+              className="bg-white border border-[#D9C5BE] text-[#2C1A1A] px-2.5 py-1.5 rounded-md text-xs outline-none text-center cursor-pointer"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="font-semibold text-[#8A6A6A]">To:</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => { setToDate(e.target.value); setPresetPeriod("custom"); }}
+              className="bg-white border border-[#D9C5BE] text-[#2C1A1A] px-2.5 py-1.5 rounded-md text-xs outline-none text-center cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+
       {isLoading ? (
         <p style={{ color: "#8A6A6A" }}>Loading dashboard analytics…</p>
       ) : (
         <>
           {/* Primary Action Hero Bar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              background: "linear-gradient(135deg, #7D4757 0%, #5C323E 100%)",
-              color: "#FFFBFC",
-              padding: "20px 24px",
-              borderRadius: "14px",
-              marginBottom: "28px",
-              boxShadow: "0 6px 20px rgba(125,71,87,0.22)",
-            }}
-          >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-[#7D4757] to-[#5C323E] text-white p-5 rounded-2xl mb-7 shadow-lg">
             <div>
               <p style={{ fontSize: "0.72rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#E8C4C4", margin: 0 }}>
                 Inventory Management
@@ -292,6 +466,7 @@ function AdminDashboard() {
                 boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
                 transition: "all 0.2s ease-in-out",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
@@ -308,8 +483,23 @@ function AdminDashboard() {
             </Link>
           </div>
 
-          {/* Stat Cards - Clickable Routing */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "28px" }}>
+          {/* Revenue Detail Hover Card & Overview Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+            <RevenueHoverCard
+              totalRevenue={data?.totalRevenue ?? filteredTotalRevenue}
+              orderCount={data?.allPaidOrders?.length ?? filteredOrders.length}
+              avgOrderValue={data?.avgOrderValue ?? (filteredOrders.length ? Math.round(filteredTotalRevenue / filteredOrders.length) : 0)}
+              topCategory={data?.topCategory ?? "Outerwear"}
+            >
+              <div className="bg-[#FFFBFC] rounded-xl p-5 border-1.5 border-[#E8C4C4] shadow-xs cursor-pointer hover:border-[#7D4757] transition-all">
+                <p className="text-[0.72rem] tracking-widest uppercase text-[#8A6A6A] mb-1">Total Revenue (Hover)</p>
+                <p className="text-2xl font-bold text-[#3B7A4E] font-display">
+                  {formatPKR(data?.totalRevenue ?? filteredTotalRevenue)}
+                </p>
+                <p className="text-[0.7rem] text-[#8A6A6A] mt-1">Hover for instant category & AOV breakdown</p>
+              </div>
+            </RevenueHoverCard>
+
             <StatCard
               label="Published Listings"
               value={data?.published ?? 0}
@@ -333,7 +523,7 @@ function AdminDashboard() {
 
           {/* Sparkline & Analytics Section with Timeframe Filter */}
           <div style={{ background: "#FFFBFC", borderRadius: "14px", border: "1.5px solid #E8C4C4", padding: "20px 24px", marginBottom: "36px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div>
                 <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#2C1A1A", margin: 0 }}>Analytics & Trend Performance</h3>
                 <p style={{ fontSize: "0.8rem", color: "#8A6A6A", margin: "2px 0 0" }}>Interactive sparkline trend views broken down by timeframe</p>
@@ -362,11 +552,20 @@ function AdminDashboard() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div style={{ background: "#F9EEF244", borderRadius: "10px", padding: "16px", border: "1px solid #E8C4C4" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                   <span style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "#3B7A4E" }}>Revenue Trend ({timeframe})</span>
-                  <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#2C1A1A" }}>{formatPKR(tfData.revenue.reduce((a, b) => a + b, 0))}</span>
+                  <RevenueHoverCard
+                    totalRevenue={tfData.revenue.reduce((a, b) => a + b, 0)}
+                    orderCount={tfData.revenue.filter(v => v > 0).length}
+                    avgOrderValue={Math.round(tfData.revenue.reduce((a, b) => a + b, 0) / Math.max(1, tfData.revenue.filter(v => v > 0).length))}
+                    topCategory={data?.topCategory ?? "Outerwear"}
+                  >
+                    <span className="text-sm font-bold text-[#2C1A1A] cursor-pointer underline decoration-dotted">
+                      {formatPKR(tfData.revenue.reduce((a, b) => a + b, 0))}
+                    </span>
+                  </RevenueHoverCard>
                 </div>
                 <Sparkline data={tfData.revenue} color="#3B7A4E" height={50} />
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", fontSize: "0.7rem", color: "#8A6A6A" }}>

@@ -235,50 +235,9 @@ function Home() {
   );
 }
 
-/* ─── Polaroid Softboard Section ─────────────────────────── */
+import { useLoveNotes } from "@/hooks/useLoveNotes";
 
-const reviews = [
-  {
-    src: "/ig-review-1.png",
-    alt: "Instagram DM: Customer loves the cream embroidered kurta",
-    caption: "literally cried it's so beautiful 😭💕",
-    rotate: "-4deg",
-    top: "48px",
-    left: "2%",
-    pinColor: "#E8888A",
-    tape: true,
-  },
-  {
-    src: "/ig-review-2.png",
-    alt: "Instagram DM: Customer got compliments at wedding",
-    caption: "got SO many compliments 🌿✨",
-    rotate: "3deg",
-    top: "20px",
-    left: "26%",
-    pinColor: "#9B8EC4",
-    tape: false,
-  },
-  {
-    src: "/ig-review-3.png",
-    alt: "Instagram comments: customers raving about the maroon lawn",
-    caption: "giving everything!! 😍🔥",
-    rotate: "-2deg",
-    top: "60px",
-    left: "51%",
-    pinColor: "#7DA88A",
-    tape: true,
-  },
-  {
-    src: "/ig-review-4.png",
-    alt: "Instagram story reply: 3 orders and counting 💗",
-    caption: "one of a kind, literally 💗",
-    rotate: "5deg",
-    top: "30px",
-    left: "74%",
-    pinColor: "#E8B87A",
-    tape: false,
-  },
-];
+/* ─── Polaroid Softboard Section ─────────────────────────── */
 
 function PushPin({ color }: { color: string }) {
   return (
@@ -306,6 +265,8 @@ function Tape() {
 }
 
 function SoftboardSection() {
+  const { notes } = useLoveNotes();
+
   return (
     <section
       style={{
@@ -349,69 +310,83 @@ function SoftboardSection() {
 
         {/* Polaroids board */}
         <div style={{ position: "relative", minHeight: "420px" }}>
-          {reviews.map((r) => (
-            <div
-              key={r.src}
-              style={{
-                position: "absolute",
-                top: r.top,
-                left: r.left,
-                width: "clamp(180px, 20vw, 230px)",
-                transform: `rotate(${r.rotate})`,
-                transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s",
-                cursor: "pointer",
-                zIndex: 2,
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.07)";
-                (e.currentTarget as HTMLElement).style.zIndex = "10";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 20px 50px rgba(125,71,87,0.25), 0 4px 16px rgba(125,71,87,0.15)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.transform = `rotate(${r.rotate}) scale(1)`;
-                (e.currentTarget as HTMLElement).style.zIndex = "2";
-                (e.currentTarget as HTMLElement).style.boxShadow = "";
-              }}
-            >
-              {/* Push pin or tape */}
-              {r.tape ? <Tape /> : <PushPin color={r.pinColor} />}
+          {notes.map((r, index) => {
+            // Default layout fallback positioning if top/left missing
+            const defaultPos = [
+              { top: "48px", left: "2%", rotate: "-4deg" },
+              { top: "20px", left: "26%", rotate: "3deg" },
+              { top: "60px", left: "51%", rotate: "-2deg" },
+              { top: "30px", left: "74%", rotate: "5deg" },
+            ];
+            const fallback = defaultPos[index % defaultPos.length];
+            const top = r.top || fallback.top;
+            const left = r.left || fallback.left;
+            const rotate = r.rotate || fallback.rotate;
 
-              {/* Polaroid frame */}
-              <div style={{
-                background: "#FFFBFC",
-                padding: "10px 10px 38px 10px",
-                boxShadow: "0 8px 28px rgba(125,71,87,0.18), 0 2px 8px rgba(125,71,87,0.08)",
-                borderRadius: "4px",
-                border: "1px solid rgba(232,196,204,0.5)",
-              }}>
-                {/* Screenshot image */}
-                <img
-                  src={r.src}
-                  alt={r.alt}
-                  style={{
-                    width: "100%",
-                    aspectRatio: "4/5",
-                    objectFit: "cover",
-                    objectPosition: "top",
-                    display: "block",
-                    borderRadius: "1px",
-                  }}
-                />
-                {/* Polaroid caption strip */}
-                <p style={{
-                  fontFamily: "'Kalam', cursive",
-                  fontSize: "0.82rem",
-                  color: "#7D4757",
-                  textAlign: "center",
-                  marginTop: "12px",
-                  lineHeight: 1.35,
-                  padding: "0 4px",
+            return (
+              <div
+                key={r.id || r.src}
+                style={{
+                  position: "absolute",
+                  top: top,
+                  left: left,
+                  width: "clamp(180px, 20vw, 230px)",
+                  transform: `rotate(${rotate})`,
+                  transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s",
+                  cursor: "pointer",
+                  zIndex: 2,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.07)";
+                  (e.currentTarget as HTMLElement).style.zIndex = "10";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 20px 50px rgba(125,71,87,0.25), 0 4px 16px rgba(125,71,87,0.15)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform = `rotate(${rotate}) scale(1)`;
+                  (e.currentTarget as HTMLElement).style.zIndex = "2";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "";
+                }}
+              >
+                {/* Push pin or tape */}
+                {r.tape ? <Tape /> : <PushPin color={r.pinColor || "#9B8EC4"} />}
+
+                {/* Polaroid frame */}
+                <div style={{
+                  background: "#FFFBFC",
+                  padding: "10px 10px 38px 10px",
+                  boxShadow: "0 8px 28px rgba(125,71,87,0.18), 0 2px 8px rgba(125,71,87,0.08)",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(232,196,204,0.5)",
                 }}>
-                  {r.caption}
-                </p>
+                  {/* Screenshot image */}
+                  <img
+                    src={r.src}
+                    alt={r.alt}
+                    style={{
+                      width: "100%",
+                      aspectRatio: "4/5",
+                      objectFit: "cover",
+                      objectPosition: "top",
+                      display: "block",
+                      borderRadius: "1px",
+                    }}
+                  />
+                  {/* Polaroid caption strip */}
+                  <p style={{
+                    fontFamily: "'Kalam', cursive",
+                    fontSize: "0.82rem",
+                    color: "#7D4757",
+                    textAlign: "center",
+                    marginTop: "12px",
+                    lineHeight: 1.35,
+                    padding: "0 4px",
+                  }}>
+                    {r.caption}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Bottom CTA */}

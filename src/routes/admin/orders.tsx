@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Package2, Truck, XCircle, Eye, CheckCircle2, Clock, ShieldCheck, X } from "lucide-react";
 import { useAdminOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
-import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../admin";
 import { formatPKR } from "@/lib/catalog";
 
 interface OrdersSearch {
@@ -49,7 +49,7 @@ function AdminOrders() {
   };
 
   return (
-    <div style={{ padding: "32px 36px" }}>
+    <div className="p-4 sm:p-6 lg:p-9">
       <AdminBreadcrumb items={[{ label: "Orders" }]} />
       <AdminPageHeader title="Orders" />
 
@@ -63,22 +63,22 @@ function AdminOrders() {
               padding: "6px 14px",
               borderRadius: "999px",
               fontSize: "0.78rem",
-              fontWeight: 600,
+              fontWeight: statusFilter === s ? 700 : 500,
+              border: "1.5px solid #E8C4C4",
+              background: statusFilter === s ? "#7D4757" : "#FFFBFC",
+              color: statusFilter === s ? "#FFF" : "#7D4757",
               cursor: "pointer",
-              border: "1.5px solid",
-              borderColor: statusFilter === s ? "#7D4757" : "#E8C4C4",
-              background: statusFilter === s ? "#7D475714" : "#FFFBFC",
-              color: statusFilter === s ? "#7D4757" : "#8A6A6A",
               transition: "all 0.15s",
+              textTransform: "capitalize",
             }}
           >
-            {s ? s.charAt(0).toUpperCase() + s.slice(1) : "All Orders"}
+            {s ? s : "All Orders"}
           </button>
         ))}
       </div>
 
       {/* Table */}
-      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflow: "hidden" }}>
+      <div style={{ background: "#FFFBFC", borderRadius: "12px", border: "1.5px solid #E8C4C4", overflowX: "auto" }}>
         {isLoading ? (
           <p style={{ padding: "32px", color: "#8A6A6A", textAlign: "center" }}>Loading orders…</p>
         ) : !orders.length ? (

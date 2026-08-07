@@ -61,23 +61,22 @@ function CheckoutSuccess() {
           </div>
         </div>
 
-        <p className="type-eyebrow text-muted-foreground">Payment confirmed</p>
+        <p className="type-eyebrow text-muted-foreground">Order Successful</p>
         <h1 className="type-h1 mt-2">
-          {shipping?.name ? `Thank you, ${shipping.name.split(" ")[0]}!` : "Order placed!"}
+          {shipping?.name ? `Thank you, ${shipping.name.split(" ")[0]}!` : "Payment Successful!"}
         </h1>
 
         {loading ? (
           <div className="mt-6 h-4 w-48 animate-pulse rounded bg-secondary/60" />
         ) : order ? (
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Order <strong className="text-foreground">#{order.id.slice(0, 8).toUpperCase()}</strong> is confirmed.
-            {shipping?.city ? ` We'll dispatch to ${shipping.city}` : " We'll dispatch your pieces"} within 48 hours and
-            drop you a WhatsApp message once it ships.
+            Your order <strong className="text-foreground">#{order.id.slice(0, 8).toUpperCase()}</strong> has been placed successfully.
+            {shipping?.city ? ` We will dispatch your items to ${shipping.city}` : " We will dispatch your pre-loved pieces"} within 48 hours and send a WhatsApp update when shipped.
           </p>
         ) : (
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Your order has been received and payment is confirmed.
-            We'll send you a WhatsApp confirmation and dispatch within 48 hours.
+            Your payment was successful and your order has been received!
+            We'll send you a WhatsApp confirmation and dispatch your order within 48 hours.
           </p>
         )}
 
@@ -90,11 +89,11 @@ function CheckoutSuccess() {
           <ol className="space-y-3 text-sm text-muted-foreground">
             <li className="flex gap-3">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-foreground/30 text-xs font-semibold text-foreground">1</span>
-              <span>We confirm your pieces within 2 hours during business hours.</span>
+              <span>We confirm your reserved pieces during business hours.</span>
             </li>
             <li className="flex gap-3">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-foreground/30 text-xs font-semibold text-foreground">2</span>
-              <span>Items are carefully packed and handed to our courier within 48 hours.</span>
+              <span>Items are carefully packed and handed to courier within 48 hours.</span>
             </li>
             <li className="flex gap-3">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-foreground/30 text-xs font-semibold text-foreground">3</span>
@@ -105,16 +104,16 @@ function CheckoutSuccess() {
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link
-            to="/shop"
-            className="border border-foreground bg-accent px-8 py-3 text-sm font-medium tracking-wide text-accent-foreground transition-opacity hover:opacity-90"
+            to="/"
+            className="border border-foreground bg-accent px-8 py-3 text-sm font-medium tracking-wide text-accent-foreground transition-opacity hover:opacity-90 shadow-sm"
           >
-            Continue shopping
+            Go Back and Shop
           </Link>
           <Link
             to="/account"
             className="border border-input px-8 py-3 text-sm font-medium tracking-wide text-muted-foreground transition-opacity hover:opacity-80"
           >
-            View my orders
+            View My Orders
           </Link>
         </div>
       </div>
