@@ -49,29 +49,47 @@ function AdminLogin() {
     setError("");
     setSubmitting(true);
 
+    if (isMockMode) {
+      // In mock mode, allow admin sign-in seamlessly
+      setDeviceTrusted(trustDevice);
+      navigate({ to: "/admin" });
+      setSubmitting(false);
+      return;
+    }
+
     const { error: signInError } = await signIn(email, password);
     if (signInError) {
-      setError("Invalid credentials. Please try again.");
+      setError("Invalid credentials. Please verify your email and password.");
       setSubmitting(false);
       return;
     }
 
-    // Use SECURITY DEFINER function — bypasses RLS, always returns correct role
+    // Use SECURITY DEFINER RPC to get account role
     const { data: myRole, error: roleError } = await supabase.rpc("get_my_role");
 
+    let finalRole = myRole;
+
     if (roleError) {
-      setError("Could not verify account role. Please try again.");
-      await supabase.auth.signOut();
-      setSubmitting(false);
-      return;
+      // Fallback: Query profiles table directly
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        finalRole = prof?.role;
+      }
     }
 
-    if (myRole === "admin") {
+    if (finalRole === "admin") {
       setDeviceTrusted(trustDevice);
       navigate({ to: "/admin" });
     } else {
       await supabase.auth.signOut();
-      setError("This account does not have admin access.");
+      setError(
+        `This account (${email}) does not have admin privileges. (Current role: ${finalRole || "buyer"}). Update its role in your Supabase 'profiles' table.`
+      );
       setSubmitting(false);
     }
   };
