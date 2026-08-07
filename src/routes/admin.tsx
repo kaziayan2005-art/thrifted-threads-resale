@@ -8,31 +8,39 @@ import { supabase } from "@/lib/supabase";
 import { isDeviceTrusted, setDeviceTrusted } from "./admin/login";
 
 export async function checkAdminAuth() {
-  if (isMockMode) {
-    if (!isDeviceTrusted()) {
+  try {
+    if (isMockMode) {
+      if (!isDeviceTrusted()) {
+        throw redirect({ to: "/admin/login" });
+      }
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !isDeviceTrusted()) {
       throw redirect({ to: "/admin/login" });
     }
-    return;
-  }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session || !isDeviceTrusted()) {
+    const { data: myRole } = await supabase.rpc("get_my_role");
+    let userRole = myRole;
+
+    if (!userRole) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      userRole = profile?.role;
+    }
+
+    if (userRole !== "admin") throw redirect({ to: "/" });
+  } catch (err: any) {
+    if (err && typeof err === "object" && ("isRedirect" in err || "to" in err || "status" in err || err.statusCode === 302 || err.statusCode === 307 || err.statusCode === 308 || err.type === "redirect")) {
+      throw err;
+    }
+    console.error("Admin auth check error:", err);
     throw redirect({ to: "/admin/login" });
   }
-
-  const { data: myRole } = await supabase.rpc("get_my_role");
-  let userRole = myRole;
-
-  if (!userRole) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-    userRole = profile?.role;
-  }
-
-  if (userRole !== "admin") throw redirect({ to: "/" });
 }
 
 export const Route = createFileRoute("/admin")({

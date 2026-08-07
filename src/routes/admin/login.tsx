@@ -11,10 +11,12 @@ export const Route = createFileRoute("/admin/login")({
 const TRUSTED_DEVICE_KEY = "tt_admin_trusted_device";
 
 export function isDeviceTrusted(): boolean {
+  if (typeof window === "undefined") return true;
   return localStorage.getItem(TRUSTED_DEVICE_KEY) === "true";
 }
 
 export function setDeviceTrusted(trusted: boolean): void {
+  if (typeof window === "undefined") return;
   if (trusted) {
     localStorage.setItem(TRUSTED_DEVICE_KEY, "true");
   } else {
