@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAdminListings, useUpdateListing } from "@/hooks/useListings";
-import { AdminBreadcrumb, AdminPageHeader } from "../_layout";
-import { conditions, occasions, sizes } from "@/lib/catalog";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "../_layout";
+import { conditions, occasions, sizes, brands } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/listings/$id/edit")({
+  beforeLoad: checkAdminAuth,
   component: EditListing,
 });
 

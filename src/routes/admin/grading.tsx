@@ -3,10 +3,11 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
 import type { GradingDefinition } from "@/lib/database.types";
 
 export const Route = createFileRoute("/admin/grading")({
+  beforeLoad: checkAdminAuth,
   component: AdminGrading,
 });
 

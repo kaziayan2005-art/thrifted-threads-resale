@@ -193,7 +193,7 @@ function Group({
               type="button"
               aria-pressed={on}
               onClick={() => onToggle(o)}
-              className={`ink-tag transition-colors ${on ? "bg-foreground text-background" : "hover:bg-secondary"}`}
+              className={`ink-tag cursor-pointer transition-colors ${on ? "bg-foreground text-background" : "hover:bg-secondary"}`}
             >
               {o}
             </button>

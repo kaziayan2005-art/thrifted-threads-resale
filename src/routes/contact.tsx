@@ -44,7 +44,10 @@ function Contact() {
             Message
             <textarea className={`${field} h-32`} name="message" required maxLength={1000} />
           </label>
-          <button type="submit" className="border border-foreground bg-accent px-6 py-3 text-sm font-medium text-accent-foreground">
+          <button
+            type="submit"
+            className="border border-foreground bg-accent px-6 py-3 text-sm font-medium text-accent-foreground cursor-pointer transition-all duration-200 hover:bg-secondary hover:text-foreground hover:shadow-md"
+          >
             Send message
           </button>
           {sent && (
@@ -60,10 +63,10 @@ function Contact() {
             Order updates, sizing checks and styling questions. Mon–Sat, 11am–7pm PKT.
           </p>
           <a
-            href="https://wa.me/923000000000"
+            href="https://wa.me/923332711821"
             target="_blank"
             rel="noreferrer noopener"
-            className="ink-tag mt-5 hover:bg-secondary"
+            className="ink-tag mt-5 inline-flex items-center gap-2 cursor-pointer transition-all duration-200 hover:bg-secondary hover:shadow-sm"
           >
             <MessageCircle className="size-3.5" strokeWidth={1.25} /> Open WhatsApp
           </a>

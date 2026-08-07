@@ -58,12 +58,12 @@ export function ProductCard({ product }: { product: Product }) {
         type="button"
         onClick={() => toggleWishlist(product.id)}
         aria-pressed={saved}
-        aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
-        className="absolute right-2 top-2 grid size-9 place-items-center border border-foreground bg-background/90 transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+        aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+        className="absolute top-3 right-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground group-hover:-translate-y-0.5"
       >
         <Heart
-          className={`size-4 ${saved ? "fill-accent stroke-accent sketch-pop" : "stroke-foreground"}`}
-          strokeWidth={1.25}
+          className={`size-4 transition-colors ${saved ? "fill-accent text-accent" : "text-foreground group-hover:text-accent"}`}
+          strokeWidth={1.5}
         />
       </button>
     </article>

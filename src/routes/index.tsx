@@ -417,7 +417,7 @@ function SoftboardSection() {
         {/* Bottom CTA */}
         <div style={{ textAlign: "center", marginTop: "80px" }}>
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/threadsthrifted26?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
             target="_blank"
             rel="noreferrer noopener"
             style={{

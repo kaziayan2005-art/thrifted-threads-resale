@@ -49,7 +49,7 @@ function Header() {
             <Link
               key={item.to}
               to={item.to}
-              className="type-eyebrow transition-all"
+              className="type-eyebrow transition-all duration-200 hover:text-accent hover:border-b-2 hover:border-accent hover:pb-[2px]"
               style={{ color: "#2C1A1A", letterSpacing: "0.18em", fontSize: "0.65rem" }}
               activeProps={{
                 className: "type-eyebrow",
@@ -62,20 +62,40 @@ function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link to="/shop" aria-label="Search the shop" className="hidden sm:block" style={{ color: "#7D4757" }}>
+          <Link
+            to="/shop"
+            aria-label="Search the shop"
+            className="hidden sm:block cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:drop-shadow-sm"
+            style={{ color: "#7D4757" }}
+          >
             <Search className="size-5" strokeWidth={1.5} />
           </Link>
-          <Link to="/wishlist" aria-label={`Wishlist, ${wishlist.length} items`} className="relative" style={{ color: "#7D4757" }}>
-            <Heart className="size-5" strokeWidth={1.5} />
+          <Link
+            to="/wishlist"
+            aria-label={`Wishlist, ${wishlist.length} items`}
+            className="group relative cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:drop-shadow-sm"
+            style={{ color: "#7D4757" }}
+          >
+            <Heart className="size-5 transition-colors duration-200 group-hover:fill-[#7d4757]" strokeWidth={1.5} />
             {wishlist.length > 0 && <Dot n={wishlist.length} />}
           </Link>
-          <Link to="/cart" aria-label={`Cart, ${cart.length} items`} className="relative" style={{ color: "#7D4757" }}>
+          <Link
+            to="/cart"
+            aria-label={`Cart, ${cart.length} items`}
+            className="relative cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:drop-shadow-sm"
+            style={{ color: "#7D4757" }}
+          >
             <ShoppingBag className="size-5" strokeWidth={1.5} />
             {cart.length > 0 && <Dot n={cart.length} />}
           </Link>
           {!loading && (
             user ? (
-              <Link to="/account" aria-label="Your account" style={{ color: "#7D4757" }}>
+              <Link
+                to="/account"
+                aria-label="Your account"
+                className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:drop-shadow-sm"
+                style={{ color: "#7D4757" }}
+              >
                 <User className="size-5" strokeWidth={1.5} />
               </Link>
             ) : (
@@ -83,6 +103,7 @@ function Header() {
                 type="button"
                 aria-label="Sign in or create account"
                 onClick={() => setAuthOpen(true)}
+                className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:drop-shadow-sm"
                 style={{ color: "#7D4757" }}
               >
                 <User className="size-5" strokeWidth={1.5} />
@@ -198,7 +219,7 @@ function Footer() {
             WhatsApp is our fastest channel — order updates and styling questions both live there.
           </p>
           <a
-            href="https://wa.me/923000000000"
+            href="https://wa.me/923332711821"
             rel="noreferrer noopener"
             target="_blank"
             className="mt-5 inline-flex items-center gap-2 transition-opacity hover:opacity-80"

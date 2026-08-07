@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, Star, MessageSquare } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
 
 export const Route = createFileRoute("/admin/reviews")({
+  beforeLoad: checkAdminAuth,
   component: AdminReviews,
 });
 

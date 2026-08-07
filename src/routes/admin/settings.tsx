@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Settings as SettingsIcon, Tag, ShieldCheck, CreditCard, Sliders, ChevronRight } from "lucide-react";
-import { AdminBreadcrumb, AdminPageHeader } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
 import { useGradingScale, useCreateGrade, useDeleteGrade } from "@/hooks/useGrading";
 
 export const Route = createFileRoute("/admin/settings")({
+  beforeLoad: checkAdminAuth,
   component: AdminSettings,
 });
 

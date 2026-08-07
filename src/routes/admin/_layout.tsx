@@ -7,22 +7,23 @@ import { supabase } from "@/lib/supabase";
 
 import { isDeviceTrusted, setDeviceTrusted } from "./login";
 
+export async function checkAdminAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !isDeviceTrusted()) {
+    throw redirect({ to: "/admin/login" });
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", session.user.id)
+    .single();
+
+  if (profile?.role !== "admin") throw redirect({ to: "/" });
+}
+
 export const Route = createFileRoute("/admin/_layout")({
-  beforeLoad: async () => {
-    // Check Supabase session + admin role + trusted device flag
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !isDeviceTrusted()) {
-      throw redirect({ to: "/admin/login" });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    if (profile?.role !== "admin") throw redirect({ to: "/" });
-  },
+  beforeLoad: checkAdminAuth,
   component: AdminLayout,
 });
 

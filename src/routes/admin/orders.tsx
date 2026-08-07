@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Package2, Truck, XCircle, Eye, CheckCircle2, Clock, ShieldCheck, X } from "lucide-react";
 import { useAdminOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
-import { AdminBreadcrumb, AdminPageHeader } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
 import { formatPKR } from "@/lib/catalog";
 
 interface OrdersSearch {
@@ -10,6 +10,7 @@ interface OrdersSearch {
 }
 
 export const Route = createFileRoute("/admin/orders")({
+  beforeLoad: checkAdminAuth,
   validateSearch: (search: Record<string, unknown>): OrdersSearch => ({
     status: typeof search["status"] === "string" ? search["status"] : undefined,
   }),

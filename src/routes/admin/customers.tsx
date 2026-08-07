@@ -3,10 +3,11 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Search, ShoppingBag, Eye, X, Phone, Mail } from "lucide-react";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { AdminBreadcrumb, AdminPageHeader } from "./_layout";
+import { AdminBreadcrumb, AdminPageHeader, checkAdminAuth } from "./_layout";
 import { formatPKR } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/customers")({
+  beforeLoad: checkAdminAuth,
   component: AdminCustomers,
 });
 

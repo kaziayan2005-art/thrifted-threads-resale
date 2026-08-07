@@ -2,10 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Plus, Eye, EyeOff, Edit3, Copy, Trash2, Search, Filter } from "lucide-react";
 import { useAdminListings, useUpdateListing, useDeleteListing, useDuplicateListing } from "@/hooks/useListings";
-import { AdminPageHeader, AdminBreadcrumb } from "../_layout";
+import { AdminPageHeader, AdminBreadcrumb, checkAdminAuth } from "../_layout";
 import { brands, sizes, conditions } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/listings/")({
+  beforeLoad: checkAdminAuth,
   component: AdminListings,
 });
 
