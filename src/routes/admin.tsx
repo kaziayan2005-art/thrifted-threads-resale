@@ -8,18 +8,31 @@ import { supabase } from "@/lib/supabase";
 import { isDeviceTrusted, setDeviceTrusted } from "./admin/login";
 
 export async function checkAdminAuth() {
+  if (isMockMode) {
+    if (!isDeviceTrusted()) {
+      throw redirect({ to: "/admin/login" });
+    }
+    return;
+  }
+
   const { data: { session } } = await supabase.auth.getSession();
   if (!session || !isDeviceTrusted()) {
     throw redirect({ to: "/admin/login" });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", session.user.id)
-    .single();
+  const { data: myRole } = await supabase.rpc("get_my_role");
+  let userRole = myRole;
 
-  if (profile?.role !== "admin") throw redirect({ to: "/" });
+  if (!userRole) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+    userRole = profile?.role;
+  }
+
+  if (userRole !== "admin") throw redirect({ to: "/" });
 }
 
 export const Route = createFileRoute("/admin")({
