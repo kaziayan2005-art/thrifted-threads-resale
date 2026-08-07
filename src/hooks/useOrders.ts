@@ -32,10 +32,13 @@ export function useOrders() {
 export function useAdminOrders(status?: string) {
   return useQuery({
     queryKey: ["admin-orders", status],
-    queryFn: async () => {
-      // Note: we don't join profiles here because orders.buyer_id → auth.users
-      // (not public.profiles), so PostgREST can't resolve the join.
-      // Buyer name/phone/email come from shipping_address JSON instead.
+    queryFn: async (): Promise<OrderWithItems[]> => {
+      if (isMockMode) {
+        let list = mockOrders as OrderWithItems[];
+        if (status) list = list.filter((o) => o.status === status);
+        return list;
+      }
+
       let query = supabase
         .from("orders")
         .select("*, order_items(*)")
@@ -43,9 +46,9 @@ export function useAdminOrders(status?: string) {
       if (status) query = query.eq("status", status);
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as OrderWithItems[];
     },
-    enabled: !isMockMode,
+    enabled: true,
   });
 }
 
@@ -110,11 +113,23 @@ export async function createCheckoutSession(
 // ─── Mock order data (used when Supabase not connected) ──────
 const mockOrders: Partial<OrderWithItems>[] = [
   {
+    id: "TT-10429",
+    status: "pending",
+    total: 4500,
+    payment_provider: "stripe",
+    created_at: new Date().toISOString(),
+    shipping_address: { name: "Ayesha Khan", phone: "+92 300 9876543", email: "ayesha@example.com", address: "DHA Phase 5", city: "Karachi" },
+    order_items: [
+      { listing_snapshot: { title: "Vintage Trench Coat", slug: "vintage-trench-coat", resale_price: 4500 } } as OrderItem & { listing_snapshot: { title: string; slug: string; resale_price: number } },
+    ],
+  },
+  {
     id: "TT-10428",
-    status: "fulfilled",
+    status: "pending",
     total: 10100,
     payment_provider: "stripe",
     created_at: "2026-07-22T10:00:00Z",
+    shipping_address: { name: "Sara Ahmed", phone: "+92 300 1234567", email: "sara@example.com", address: "Gulberg III", city: "Lahore" },
     order_items: [
       { listing_snapshot: { title: "Ivory Silk Camp Shirt", slug: "ivory-silk-camp-shirt", resale_price: 4200 } } as OrderItem & { listing_snapshot: { title: string; slug: string; resale_price: number } },
       { listing_snapshot: { title: "Olive Slip Dress",      slug: "olive-slip-dress",      resale_price: 3900 } } as OrderItem & { listing_snapshot: { title: string; slug: string; resale_price: number } },
@@ -126,6 +141,7 @@ const mockOrders: Partial<OrderWithItems>[] = [
     total: 5800,
     payment_provider: "stripe",
     created_at: "2026-07-09T14:30:00Z",
+    shipping_address: { name: "Fatima Ali", phone: "+92 300 5554433", email: "fatima@example.com", address: "F-7/2", city: "Islamabad" },
     order_items: [
       { listing_snapshot: { title: "Ink Black Blazer", slug: "ink-black-blazer", resale_price: 5800 } } as OrderItem & { listing_snapshot: { title: string; slug: string; resale_price: number } },
     ],
