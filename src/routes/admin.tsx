@@ -8,6 +8,11 @@ import { supabase } from "@/lib/supabase";
 import { isDeviceTrusted, setDeviceTrusted } from "./admin/login";
 
 export async function checkAdminAuth() {
+  // On server-side rendering (SSR), pass through to let the client browser verify session & role
+  if (typeof window === "undefined") {
+    return;
+  }
+
   try {
     if (isMockMode) {
       if (!isDeviceTrusted()) {
