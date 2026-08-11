@@ -2,25 +2,26 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase, isMockMode } from "@/lib/supabase";
-import { ShieldCheck, KeyRound, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/admin/login")({
   component: AdminLogin,
 });
 
-const TRUSTED_DEVICE_KEY = "tt_admin_trusted_device";
+const ADMIN_SESSION_KEY = "tt_admin_session";
 
 export function isDeviceTrusted(): boolean {
-  if (typeof window === "undefined") return true;
-  return localStorage.getItem(TRUSTED_DEVICE_KEY) === "true";
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 }
 
 export function setDeviceTrusted(trusted: boolean): void {
   if (typeof window === "undefined") return;
   if (trusted) {
-    localStorage.setItem(TRUSTED_DEVICE_KEY, "true");
+    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
   } else {
-    localStorage.removeItem(TRUSTED_DEVICE_KEY);
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    localStorage.removeItem("tt_admin_trusted_device");
   }
 }
 
@@ -28,20 +29,14 @@ function AdminLogin() {
   const { signIn, role, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<"login" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Forgot password state
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotSent, setForgotSent] = useState(false);
-  const [forgotSubmitting, setForgotSubmitting] = useState(false);
-
   // Already logged in as admin AND device is trusted → redirect
-  if (!loading && role === "admin" && isDeviceTrusted()) {
+  if (isDeviceTrusted() && (isMockMode || (!loading && role === "admin"))) {
     navigate({ to: "/admin" });
     return null;
   }
@@ -53,7 +48,7 @@ function AdminLogin() {
 
     if (isMockMode) {
       // In mock mode, allow admin sign-in seamlessly
-      setDeviceTrusted(trustDevice);
+      setDeviceTrusted(true);
       navigate({ to: "/admin" });
       setSubmitting(false);
       return;
@@ -85,7 +80,7 @@ function AdminLogin() {
     }
 
     if (finalRole === "admin") {
-      setDeviceTrusted(trustDevice);
+      setDeviceTrusted(true);
       navigate({ to: "/admin" });
     } else {
       await supabase.auth.signOut();
@@ -96,53 +91,6 @@ function AdminLogin() {
     }
   };
 
-  const handleForgotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setForgotSubmitting(true);
-    setError("");
-
-    const trimmedEmail = forgotEmail.trim();
-    if (!trimmedEmail) {
-      setError("Please enter your email address.");
-      setForgotSubmitting(false);
-      return;
-    }
-
-    if (!isMockMode) {
-      // Execute server-side SECURITY DEFINER RPC check against auth.users & profiles table (role = 'admin')
-      const { data: isAdmin, error: rpcError } = await supabase.rpc("check_is_admin_email", {
-        p_email: trimmedEmail,
-      });
-
-      // If RPC executed cleanly and explicitly returned false -> User is not an admin
-      if (!rpcError && isAdmin === false) {
-        setError("No admin account found with this email.");
-        setForgotSubmitting(false);
-        return;
-      }
-
-      if (rpcError) {
-        console.warn(
-          "[Thrifted Threads] RPC 'check_is_admin_email' error:",
-          rpcError.message,
-          "— Proceeding with Supabase Auth reset."
-        );
-      }
-
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: `${window.location.origin}/admin/reset-password`,
-      });
-
-      if (resetErr) {
-        setError(resetErr.message);
-        setForgotSubmitting(false);
-        return;
-      }
-    }
-
-    setForgotSubmitting(false);
-    setForgotSent(true);
-  };
 
   return (
     <div
@@ -173,12 +121,11 @@ function AdminLogin() {
             Thrifted Threads
           </p>
           <p style={{ fontSize: "0.72rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "#8A6A6A", marginTop: "6px" }}>
-            {mode === "login" ? "Admin Portal" : "Reset Admin Password"}
+            Admin Portal
           </p>
         </div>
 
-        {mode === "login" ? (
-          <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#5A3A3A", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "6px" }}>
                 Email
@@ -195,21 +142,10 @@ function AdminLogin() {
             </div>
 
             <div style={{ marginBottom: "18px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <div style={{ marginBottom: "6px" }}>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#5A3A3A", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
                   Password
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setForgotEmail(email);
-                    setForgotSent(false);
-                    setMode("forgot");
-                  }}
-                  style={{ background: "none", border: "none", color: "#7D4757", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
-                >
-                  Forgot Password?
-                </button>
               </div>
               <input
                 type="password"
@@ -264,115 +200,6 @@ function AdminLogin() {
               {submitting ? "Signing in…" : "Sign in to Admin"}
             </button>
           </form>
-        ) : (
-          <div>
-            {forgotSent ? (
-              <div style={{ textAlign: "center" }}>
-                <CheckCircle2 size={44} color="#5B9A68" style={{ margin: "0 auto 12px" }} />
-                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#2C1A1A", marginBottom: "8px" }}>
-                  Check your inbox
-                </h3>
-                <p style={{ fontSize: "0.85rem", color: "#5A3A3A", lineHeight: 1.5, marginBottom: "24px" }}>
-                  If an account with <strong>{forgotEmail || "that email"}</strong> is registered, we have sent a secure password reset link to it.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  style={{
-                    width: "100%",
-                    padding: "11px",
-                    borderRadius: "10px",
-                    background: "#7D4757",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "0.88rem",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  Return to Sign In
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleForgotSubmit}>
-                <p style={{ fontSize: "0.85rem", color: "#5A3A3A", marginBottom: "18px", lineHeight: 1.4 }}>
-                  Enter your registered admin email address below. We'll send you a link to reset your password.
-                </p>
-
-                <div style={{ marginBottom: "20px" }}>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#5A3A3A", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "6px" }}>
-                    Admin Email
-                  </label>
-                  <input
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="admin@example.com"
-                    required
-                    autoComplete="email"
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #E8C4C4", background: "#F9EEF2", color: "#2C1A1A", fontSize: "0.9rem", outline: "none", boxSizing: "border-box" }}
-                  />
-                </div>
-
-                {error && (
-                  <div style={{ background: "#FDEAEA", border: "1.5px solid #C08080", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", color: "#C08080", fontSize: "0.82rem" }}>
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={forgotSubmitting}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    background: "linear-gradient(135deg, #7D4757, #9B6070)",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: "0.92rem",
-                    border: "none",
-                    cursor: forgotSubmitting ? "wait" : "pointer",
-                    boxShadow: "0 4px 16px rgba(125,71,87,0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                  }}
-                >
-                  {forgotSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Sending Link…
-                    </>
-                  ) : (
-                    <>
-                      <KeyRound size={16} /> Send Reset Link
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    marginTop: "16px",
-                    background: "none",
-                    border: "none",
-                    color: "#7D4757",
-                    fontSize: "0.82rem",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  <ArrowLeft size={14} /> Back to Sign In
-                </button>
-              </form>
-            )}
-          </div>
-        )}
 
         <p style={{ textAlign: "center", marginTop: "24px", fontSize: "0.78rem", color: "#8A6A6A" }}>
           Admin access only. <a href="/" style={{ color: "#7D4757", textDecoration: "none", fontWeight: 600 }}>← Back to shop</a>

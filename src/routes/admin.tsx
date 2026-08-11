@@ -1,5 +1,5 @@
-import { createFileRoute, Outlet, Link, redirect, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Outlet, Link, redirect, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, ShoppingBag, Package, Star, Tag, LogOut, ChevronRight, Menu, X, Users, Settings, Heart
 } from "lucide-react";
@@ -13,44 +13,44 @@ export async function checkAdminAuth() {
     return;
   }
 
-  try {
-    if (isMockMode) {
-      if (!isDeviceTrusted()) {
-        throw redirect({ to: "/admin/login" });
-      }
-      return;
-    }
+  // Clear legacy storage key if present to ensure clean state
+  localStorage.removeItem("tt_admin_trusted_device");
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !isDeviceTrusted()) {
-      throw redirect({ to: "/admin/login" });
-    }
-
-    const { data: myRole } = await supabase.rpc("get_my_role");
-    let userRole = myRole;
-
-    if (!userRole) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-      userRole = profile?.role;
-    }
-
-    if (userRole !== "admin") throw redirect({ to: "/" });
-  } catch (err: any) {
-    if (err && typeof err === "object" && ("isRedirect" in err || "to" in err || "status" in err || err.statusCode === 302 || err.statusCode === 307 || err.statusCode === 308 || err.type === "redirect")) {
-      throw err;
-    }
-    console.error("Admin auth check error:", err);
+  if (!isDeviceTrusted()) {
     throw redirect({ to: "/admin/login" });
+  }
+
+  if (isMockMode) {
+    return;
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    setDeviceTrusted(false);
+    throw redirect({ to: "/admin/login" });
+  }
+
+  const { data: myRole } = await supabase.rpc("get_my_role");
+  let userRole = myRole;
+
+  if (!userRole) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+    userRole = profile?.role;
+  }
+
+  if (userRole !== "admin") {
+    setDeviceTrusted(false);
+    throw redirect({ to: "/" });
   }
 }
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ location }) => {
-    if (location.pathname === "/admin/login" || location.pathname === "/admin/reset-password") {
+    if (location.pathname === "/admin/login") {
       return;
     }
     await checkAdminAuth();
@@ -70,11 +70,31 @@ const navItems = [
 
 function AdminLayoutRouteComponent() {
   const routerState = useRouterState();
+  const navigate = useNavigate();
   const pathname = routerState.location.pathname;
 
-  // Render child routes directly without sidebar wrapper for login & reset password
-  if (pathname === "/admin/login" || pathname === "/admin/reset-password") {
+  const [authed, setAuthed] = useState<boolean | null>(() => {
+    if (typeof window === "undefined") return false;
+    return isDeviceTrusted();
+  });
+
+  useEffect(() => {
+    if (pathname === "/admin/login") return;
+    if (!isDeviceTrusted()) {
+      setAuthed(false);
+      navigate({ to: "/admin/login", replace: true });
+    } else {
+      setAuthed(true);
+    }
+  }, [pathname, navigate]);
+
+  // Render child routes directly without sidebar wrapper for login
+  if (pathname === "/admin/login") {
     return <Outlet />;
+  }
+
+  if (!authed) {
+    return null;
   }
 
   return <AdminLayout />;

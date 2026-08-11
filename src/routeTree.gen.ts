@@ -30,7 +30,6 @@ import { Route as AdminGradingRouteImport } from './routes/admin/grading'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLoveNotesRouteImport } from './routes/admin/love-notes'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
-import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
@@ -146,11 +145,6 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
@@ -218,7 +212,6 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/love-notes': typeof AdminLoveNotesRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -250,7 +243,6 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/love-notes': typeof AdminLoveNotesRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -284,7 +276,6 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/love-notes': typeof AdminLoveNotesRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -319,7 +310,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/love-notes'
     | '/admin/orders'
-    | '/admin/reset-password'
     | '/admin/reviews'
     | '/admin/settings'
     | '/checkout/success'
@@ -351,7 +341,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/love-notes'
     | '/admin/orders'
-    | '/admin/reset-password'
     | '/admin/reviews'
     | '/admin/settings'
     | '/checkout/success'
@@ -384,7 +373,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/love-notes'
     | '/admin/orders'
-    | '/admin/reset-password'
     | '/admin/reviews'
     | '/admin/settings'
     | '/checkout/success'
@@ -567,13 +555,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/reset-password': {
-      id: '/admin/reset-password'
-      path: '/reset-password'
-      fullPath: '/admin/reset-password'
-      preLoaderRoute: typeof AdminResetPasswordRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/reviews': {
       id: '/admin/reviews'
       path: '/reviews'
@@ -646,7 +627,6 @@ interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminLoveNotesRoute: typeof AdminLoveNotesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
-  AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -661,7 +641,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminLoveNotesRoute: AdminLoveNotesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
-  AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,

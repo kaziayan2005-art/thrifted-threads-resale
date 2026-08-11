@@ -32,16 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isMockMode) { setLoading(false); return; }
 
-    // Detect password recovery link redirect in URL hash or query params
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash || "";
-      const search = window.location.search || "";
-      if ((hash.includes("type=recovery") || search.includes("type=recovery")) && !window.location.pathname.startsWith("/admin/reset-password")) {
-        window.location.href = "/admin/reset-password" + hash;
-        return;
-      }
-    }
-
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -51,15 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user.id);
       else { setProfile(null); setLoading(false); }
-
-      if (event === "PASSWORD_RECOVERY" && typeof window !== "undefined" && !window.location.pathname.startsWith("/admin/reset-password")) {
-        window.location.href = "/admin/reset-password";
-      }
     });
 
     return () => subscription.unsubscribe();
